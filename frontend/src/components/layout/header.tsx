@@ -40,27 +40,27 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b-2 border-black bg-white">
-      <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto flex h-16 sm:h-18 md:h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center shrink-0">
           <Image
             src="/images/logo-lg.png"
             alt="4HACKS"
-            width={120}
-            height={40}
-            className="h-8 sm:h-10 w-auto"
+            width={140}
+            height={48}
+            className="h-10 sm:h-11 md:h-12 w-auto"
             priority
           />
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-1">
+        <nav className="hidden lg:flex items-center gap-2">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                'px-3 xl:px-4 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap nav-link-highlight',
+                'px-4 xl:px-5 py-2.5 text-base font-medium rounded-lg transition-colors whitespace-nowrap nav-link-highlight',
                 pathname === link.href || pathname.startsWith(link.href + '/')
                   ? 'bg-brand text-black'
                   : ''
@@ -72,27 +72,27 @@ export function Header() {
         </nav>
 
         {/* Auth Buttons - Desktop */}
-        <div className="hidden lg:flex items-center gap-2 xl:gap-3">
+        <div className="hidden lg:flex items-center gap-3 xl:gap-4">
           {isAuthenticated ? (
             <>
               <Link href="/dashboard">
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="default">
                   Dashboard
                 </Button>
               </Link>
-              <Button variant="outline" size="sm" onClick={() => logout()}>
+              <Button variant="outline" size="default" onClick={() => logout()}>
                 Log Out
               </Button>
             </>
           ) : (
             <>
               <Link href="/auth/login">
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="default">
                   Log In
                 </Button>
               </Link>
               <Link href="/auth/register">
-                <button className="h-9 px-4 xl:px-5 text-sm font-bold bg-orange text-white border-2 border-black rounded-lg shadow-brutal hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all whitespace-nowrap">
+                <button className="h-10 px-5 xl:px-6 text-base font-bold bg-orange text-white border-2 border-black rounded-lg shadow-brutal hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all whitespace-nowrap">
                   Sign Up
                 </button>
               </Link>
@@ -118,7 +118,7 @@ export function Header() {
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 top-[calc(3.5rem+2px)] sm:top-[calc(4rem+2px)] bg-black/20 z-40"
+          className="lg:hidden fixed inset-0 top-[calc(4rem+2px)] sm:top-[calc(4.5rem+2px)] md:top-[calc(5rem+2px)] bg-black/20 z-40"
           onClick={() => setMobileMenuOpen(false)}
           aria-hidden="true"
         />
@@ -127,7 +127,7 @@ export function Header() {
       {/* Mobile Menu */}
       <div
         className={cn(
-          'lg:hidden fixed left-0 right-0 top-[calc(3.5rem+2px)] sm:top-[calc(4rem+2px)] bg-white border-b-2 border-black z-50 transition-all duration-300 ease-in-out',
+          'lg:hidden fixed left-0 right-0 top-[calc(4rem+2px)] sm:top-[calc(4.5rem+2px)] md:top-[calc(5rem+2px)] bg-white border-b-2 border-black z-50 transition-all duration-300 ease-in-out',
           mobileMenuOpen
             ? 'opacity-100 translate-y-0'
             : 'opacity-0 -translate-y-2 pointer-events-none'
