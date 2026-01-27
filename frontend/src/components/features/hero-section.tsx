@@ -12,7 +12,7 @@ export function HeroSection() {
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-3xl mx-auto text-center">
           {/* Main Heading */}
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-6 font-display">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-black mb-6">
             Learn, Build, and Compete
             <br />
             in One Platform
@@ -51,25 +51,25 @@ export function HeroSection() {
       </div>
 
       {/* Decorative Shape - Left */}
-      <div className="absolute bottom-0 left-0 w-64 md:w-80 lg:w-96">
+      <div className="absolute -bottom-2 left-0 w-[320px] md:w-[450px] lg:w-[600px] xl:w-[700px] pointer-events-none">
         <Image
           src="/images/Vector 70.png"
           alt=""
-          width={400}
-          height={300}
-          className="w-full h-auto transform scale-x-[-1]"
+          width={700}
+          height={500}
+          className="w-full h-auto"
           priority
         />
       </div>
 
       {/* Decorative Shape - Right */}
-      <div className="absolute bottom-0 right-0 w-64 md:w-80 lg:w-96">
+      <div className="absolute -bottom-2 right-0 w-[320px] md:w-[450px] lg:w-[600px] xl:w-[700px] pointer-events-none">
         <Image
           src="/images/Vector 70.png"
           alt=""
-          width={400}
-          height={300}
-          className="w-full h-auto"
+          width={700}
+          height={500}
+          className="w-full h-auto transform scale-x-[-1]"
           priority
         />
       </div>

@@ -1,16 +1,12 @@
 import type { Metadata } from 'next';
-import { Inter, Space_Grotesk } from 'next/font/google';
+import { Outfit } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/providers';
 
-const inter = Inter({
+const outfit = Outfit({
   subsets: ['latin'],
-  variable: '--font-inter',
-});
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ['latin'],
-  variable: '--font-space-grotesk',
+  variable: '--font-outfit',
+  weight: ['400', '500', '600', '700', '800'],
 });
 
 export const metadata: Metadata = {
@@ -27,7 +23,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased`}>
+      <body className={`${outfit.variable} font-sans antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>

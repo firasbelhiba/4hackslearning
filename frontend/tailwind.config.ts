@@ -99,8 +99,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
-        display: ['var(--font-space-grotesk)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-outfit)', 'Outfit', 'system-ui', 'sans-serif'],
+        display: ['var(--font-outfit)', 'Outfit', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         brutal: '4px 4px 0px 0px #000000',
