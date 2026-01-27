@@ -40,15 +40,15 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b-2 border-black bg-white">
-      <div className="container mx-auto flex h-16 sm:h-18 md:h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto flex h-14 sm:h-16 md:h-18 items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center shrink-0">
           <Image
             src="/images/logo-lg.png"
             alt="4HACKS"
-            width={140}
-            height={48}
-            className="h-10 sm:h-11 md:h-12 w-auto"
+            width={130}
+            height={44}
+            className="h-9 sm:h-10 md:h-11 w-auto"
             priority
           />
         </Link>
@@ -118,7 +118,7 @@ export function Header() {
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 top-[calc(4rem+2px)] sm:top-[calc(4.5rem+2px)] md:top-[calc(5rem+2px)] bg-black/20 z-40"
+          className="lg:hidden fixed inset-0 top-[calc(3.5rem+2px)] sm:top-[calc(4rem+2px)] md:top-[calc(4.5rem+2px)] bg-black/20 z-40"
           onClick={() => setMobileMenuOpen(false)}
           aria-hidden="true"
         />
@@ -127,7 +127,7 @@ export function Header() {
       {/* Mobile Menu */}
       <div
         className={cn(
-          'lg:hidden fixed left-0 right-0 top-[calc(4rem+2px)] sm:top-[calc(4.5rem+2px)] md:top-[calc(5rem+2px)] bg-white border-b-2 border-black z-50 transition-all duration-300 ease-in-out',
+          'lg:hidden fixed left-0 right-0 top-[calc(3.5rem+2px)] sm:top-[calc(4rem+2px)] md:top-[calc(4.5rem+2px)] bg-white border-b-2 border-black z-50 transition-all duration-300 ease-in-out',
           mobileMenuOpen
             ? 'opacity-100 translate-y-0'
             : 'opacity-0 -translate-y-2 pointer-events-none'
