@@ -41,7 +41,7 @@ export function Footer() {
       {/* Wave Decoration */}
       <div className="relative">
         <svg
-          className="w-full h-20"
+          className="w-full h-12 sm:h-16 md:h-20"
           viewBox="0 0 1440 80"
           preserveAspectRatio="none"
         >
@@ -53,28 +53,28 @@ export function Footer() {
       </div>
 
       <div className="bg-purple-500">
-        <div className="container mx-auto px-4 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 md:py-12">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 sm:gap-8">
             {/* Brand Section */}
-            <div className="lg:col-span-2">
-              <Link href="/" className="flex items-center space-x-2 mb-4">
-                <span className="text-2xl font-bold text-white">4</span>
-                <span className="text-2xl font-bold text-brand">HACKS</span>
+            <div className="col-span-2 sm:col-span-2 md:col-span-3 lg:col-span-2 mb-4 sm:mb-0">
+              <Link href="/" className="inline-flex items-center mb-3 sm:mb-4">
+                <span className="text-xl sm:text-2xl font-bold text-white">4</span>
+                <span className="text-xl sm:text-2xl font-bold text-brand">HACKS</span>
               </Link>
-              <p className="text-white/80 text-sm mb-6 max-w-xs">
+              <p className="text-white/80 text-sm mb-4 sm:mb-6 max-w-xs">
                 Empowering the next generation of Web3 builders through education, hackathons, and community.
               </p>
-              <div className="flex space-x-3">
+              <div className="flex gap-2 sm:gap-3">
                 {socialLinks.map((social) => (
                   <a
                     key={social.label}
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 flex items-center justify-center rounded-lg bg-white/10 border-2 border-white/20 text-white hover:bg-white hover:text-purple-500 transition-colors"
+                    className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg bg-white/10 border-2 border-white/20 text-white hover:bg-white hover:text-purple-500 transition-colors"
                     aria-label={social.label}
                   >
-                    <social.icon className="h-5 w-5" />
+                    <social.icon className="h-4 w-4 sm:h-5 sm:w-5" />
                   </a>
                 ))}
               </div>
@@ -82,13 +82,13 @@ export function Footer() {
 
             {/* Product Links */}
             <div>
-              <h3 className="font-bold text-white mb-4">Product</h3>
-              <ul className="space-y-2">
+              <h3 className="font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">Product</h3>
+              <ul className="space-y-1.5 sm:space-y-2">
                 {footerLinks.product.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-white/80 hover:text-white text-sm transition-colors"
+                      className="text-white/80 hover:text-white text-xs sm:text-sm transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -99,13 +99,13 @@ export function Footer() {
 
             {/* Resources Links */}
             <div>
-              <h3 className="font-bold text-white mb-4">Resources</h3>
-              <ul className="space-y-2">
+              <h3 className="font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">Resources</h3>
+              <ul className="space-y-1.5 sm:space-y-2">
                 {footerLinks.resources.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-white/80 hover:text-white text-sm transition-colors"
+                      className="text-white/80 hover:text-white text-xs sm:text-sm transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -116,13 +116,13 @@ export function Footer() {
 
             {/* Company Links */}
             <div>
-              <h3 className="font-bold text-white mb-4">Company</h3>
-              <ul className="space-y-2">
+              <h3 className="font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">Company</h3>
+              <ul className="space-y-1.5 sm:space-y-2">
                 {footerLinks.company.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-white/80 hover:text-white text-sm transition-colors"
+                      className="text-white/80 hover:text-white text-xs sm:text-sm transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -133,13 +133,13 @@ export function Footer() {
 
             {/* Legal Links */}
             <div>
-              <h3 className="font-bold text-white mb-4">Legal</h3>
-              <ul className="space-y-2">
+              <h3 className="font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">Legal</h3>
+              <ul className="space-y-1.5 sm:space-y-2">
                 {footerLinks.legal.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-white/80 hover:text-white text-sm transition-colors"
+                      className="text-white/80 hover:text-white text-xs sm:text-sm transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -147,6 +147,13 @@ export function Footer() {
                 ))}
               </ul>
             </div>
+          </div>
+
+          {/* Copyright */}
+          <div className="mt-8 sm:mt-10 pt-6 sm:pt-8 border-t border-white/20">
+            <p className="text-white/60 text-xs sm:text-sm text-center">
+              &copy; {new Date().getFullYear()} 4HACKS Learning. All rights reserved.
+            </p>
           </div>
         </div>
       </div>
