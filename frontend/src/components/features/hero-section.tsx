@@ -27,12 +27,12 @@ export function HeroSection() {
 
           {/* Search Bar */}
           <div className="max-w-md sm:max-w-lg md:max-w-xl mx-auto mb-6 sm:mb-8 px-2">
-            <div className="relative">
-              <Search className="absolute left-4 sm:left-4 top-1/2 -translate-y-1/2 h-5 w-5 sm:h-5 sm:w-5 text-black/60" />
+            <div className="relative flex items-center">
+              <Search className="absolute left-4 h-5 w-5 text-black/60 z-10 pointer-events-none" />
               <Input
                 type="text"
                 placeholder="Search courses"
-                className="pl-11 sm:pl-12 h-12 sm:h-14 text-base sm:text-lg bg-white/90 backdrop-blur border-2 border-black shadow-brutal focus:outline-none focus:ring-2 focus:ring-black/20"
+                className="pl-12 h-12 sm:h-14 text-base sm:text-lg bg-white border-2 border-black shadow-brutal focus:outline-none focus:ring-2 focus:ring-black/20 rounded-full"
               />
             </div>
           </div>
