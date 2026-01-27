@@ -135,9 +135,9 @@
     bottom: 0;
     left: 0;
     width: 0;
-    height: 100%;
+    height: 50%;
     background-color: hsl(var(--gold));
-    border-radius: 0.5rem;
+    border-radius: 0.25rem;
     z-index: -1;
     transition: width 0.25s ease-out;
     transform: skewX(-2deg);
