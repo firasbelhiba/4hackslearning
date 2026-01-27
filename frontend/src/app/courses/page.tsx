@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, SlidersHorizontal, X, Loader2 } from 'lucide-react';
+import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { InlineLoader } from '@/components/ui/loader';
 import { coursesApi } from '@/lib/api';
 
 interface Course {
@@ -226,12 +227,7 @@ export default function CoursesPage() {
             )}
 
             {/* Loading State */}
-            {loading && (
-              <div className="flex items-center justify-center py-16">
-                <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-                <span className="ml-3 text-gray-500">Loading courses...</span>
-              </div>
-            )}
+            {loading && <InlineLoader />}
 
             {/* Error State */}
             {error && !loading && (
