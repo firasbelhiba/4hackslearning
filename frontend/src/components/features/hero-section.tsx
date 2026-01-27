@@ -64,7 +64,7 @@ export function HeroSection() {
       </div>
 
       {/* Decorative Shape - Right */}
-      <div className="absolute -bottom-1 right-0 w-[180px] sm:w-[280px] md:w-[400px] lg:w-[550px] xl:w-[650px] pointer-events-none select-none origin-bottom-right animate-wobble-slow-alt">
+      <div className="absolute -bottom-1 right-0 w-[180px] sm:w-[280px] md:w-[400px] lg:w-[550px] xl:w-[650px] pointer-events-none select-none origin-bottom-right animate-wobble-slow-alt -scale-x-100">
         <Image
           src="/images/Vector 70.png"
           alt=""
