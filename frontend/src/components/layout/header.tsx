@@ -56,7 +56,7 @@ export function Header() {
                 'px-3 xl:px-4 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap',
                 pathname === link.href || link.active
                   ? 'bg-brand text-black'
-                  : 'hover:bg-gray-100'
+                  : 'hover:text-gold'
               )}
             >
               {link.label}
@@ -135,7 +135,7 @@ export function Header() {
                 'px-4 py-3 text-base font-medium rounded-lg transition-colors',
                 pathname === link.href || link.active
                   ? 'bg-brand text-black'
-                  : 'hover:bg-gray-100 active:bg-gray-100'
+                  : 'hover:text-gold active:text-gold'
               )}
               onClick={() => setMobileMenuOpen(false)}
             >

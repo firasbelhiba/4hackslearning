@@ -67,6 +67,9 @@ const config: Config = {
         orange: {
           DEFAULT: 'hsl(var(--orange))',
         },
+        gold: {
+          DEFAULT: 'hsl(var(--gold))',
+        },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
