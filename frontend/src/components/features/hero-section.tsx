@@ -28,7 +28,7 @@ export function HeroSection() {
           {/* Search Bar */}
           <div className="max-w-md sm:max-w-lg md:max-w-xl mx-auto mb-6 sm:mb-8 px-2">
             <div className="relative">
-              <Search className="absolute left-4 sm:left-4 top-1/2 -translate-y-1/2 h-5 w-5 sm:h-5 sm:w-5 text-gray-400" />
+              <Search className="absolute left-4 sm:left-4 top-1/2 -translate-y-1/2 h-5 w-5 sm:h-5 sm:w-5 text-black/60" />
               <Input
                 type="text"
                 placeholder="Search courses"
