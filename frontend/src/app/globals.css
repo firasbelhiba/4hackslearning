@@ -124,6 +124,29 @@
 }
 
 @layer components {
+  /* Nav link highlight effect */
+  .nav-link-highlight {
+    @apply relative;
+  }
+
+  .nav-link-highlight::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 100%;
+    background-color: hsl(var(--gold));
+    border-radius: 0.5rem;
+    z-index: -1;
+    transition: width 0.25s ease-out;
+    transform: skewX(-2deg);
+  }
+
+  .nav-link-highlight:hover::before {
+    width: 100%;
+  }
+
   /* Retro Brutalism Button Styles - Responsive */
   .btn-brutal {
     @apply relative inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 font-bold text-black bg-white border-2 border-black rounded-lg shadow-brutal transition-all duration-150;

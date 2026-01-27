@@ -148,6 +148,10 @@ const config: Config = {
           '50%': { transform: 'rotate(-1deg) translateY(0)' },
           '75%': { transform: 'rotate(0.5deg) translateY(-3px)' },
         },
+        'highlight-draw': {
+          '0%': { width: '0%' },
+          '100%': { width: '100%' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -156,6 +160,7 @@ const config: Config = {
         wiggle: 'wiggle 1s ease-in-out infinite',
         'wobble-slow': 'wobble-slow 6s ease-in-out infinite',
         'wobble-slow-alt': 'wobble-slow-alt 7s ease-in-out infinite',
+        'highlight-draw': 'highlight-draw 0.3s ease-out forwards',
       },
       backgroundImage: {
         'grid-pattern': `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
