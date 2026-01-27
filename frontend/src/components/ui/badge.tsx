@@ -8,9 +8,9 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default: 'bg-black text-white',
-        beginner: 'bg-pink-500 text-white',
-        intermediate: 'bg-yellow-400 text-black',
-        advanced: 'bg-purple-600 text-white',
+        beginner: 'bg-pink-500 text-black border-2 border-black',
+        intermediate: 'bg-yellow-400 text-black border-2 border-black',
+        advanced: 'bg-purple-600 text-black border-2 border-black',
         outline: 'border-2 border-black bg-white text-black',
         brand: 'bg-brand text-black',
       },

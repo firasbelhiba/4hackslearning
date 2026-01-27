@@ -1,74 +1,39 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Loader2 } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { coursesApi } from '@/lib/api';
 
-const categories = ['All', 'DeFi', 'Blockchain', 'Smart Contracts', 'Web3', 'NFTs'];
+interface Course {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  shortDescription: string;
+  level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+  category: string;
+  tags: string[];
+  thumbnail?: string;
+  isFree: boolean;
+  price: number;
+  instructor: {
+    id: string;
+    name: string;
+  };
+  _count?: {
+    enrollments: number;
+  };
+}
+
+const defaultCategories = ['All', 'DeFi', 'Blockchain', 'Smart Contracts', 'Web3', 'NFTs'];
 const levels = ['All Levels', 'Beginner', 'Intermediate', 'Advanced'];
-
-const courses = [
-  {
-    id: '1',
-    title: 'Hedera Certification',
-    slug: 'hedera-certification-intermediate',
-    description: 'Validate your blockchain expertise with our comprehensive certification program.',
-    level: 'INTERMEDIATE',
-    category: 'Blockchain',
-    tags: ['Hedera', 'Blockchain'],
-  },
-  {
-    id: '2',
-    title: 'Hedera Certification',
-    slug: 'hedera-certification-beginner',
-    description: 'Start your blockchain journey with Hedera fundamentals.',
-    level: 'BEGINNER',
-    category: 'Blockchain',
-    tags: ['Hedera', 'Beginner'],
-  },
-  {
-    id: '3',
-    title: 'Hedera Certification',
-    slug: 'hedera-certification-advanced',
-    description: 'Advanced Hedera development for experienced blockchain developers.',
-    level: 'ADVANCED',
-    category: 'Blockchain',
-    tags: ['Hedera', 'Advanced'],
-  },
-  {
-    id: '4',
-    title: 'DeFi Fundamentals',
-    slug: 'defi-fundamentals',
-    description: 'Learn the core concepts of decentralized finance.',
-    level: 'BEGINNER',
-    category: 'DeFi',
-    tags: ['DeFi', 'Finance'],
-  },
-  {
-    id: '5',
-    title: 'Smart Contract Security',
-    slug: 'smart-contract-security',
-    description: 'Master security patterns and auditing for smart contracts.',
-    level: 'ADVANCED',
-    category: 'Smart Contracts',
-    tags: ['Security', 'Solidity'],
-  },
-  {
-    id: '6',
-    title: 'NFT Development',
-    slug: 'nft-development',
-    description: 'Build and deploy NFT marketplaces and collections.',
-    level: 'INTERMEDIATE',
-    category: 'NFTs',
-    tags: ['NFT', 'ERC-721'],
-  },
-];
 
 function getLevelVariant(level: string): 'beginner' | 'intermediate' | 'advanced' {
   switch (level) {
@@ -84,19 +49,64 @@ function getLevelLabel(level: string): string {
 }
 
 export default function CoursesPage() {
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [categories, setCategories] = useState<string[]>(defaultCategories);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedLevel, setSelectedLevel] = useState('All Levels');
   const [showFilters, setShowFilters] = useState(false);
 
-  const filteredCourses = courses.filter((course) => {
-    const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      course.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || course.category === selectedCategory;
-    const matchesLevel = selectedLevel === 'All Levels' ||
-      getLevelLabel(course.level) === selectedLevel;
-    return matchesSearch && matchesCategory && matchesLevel;
-  });
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(searchInput);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  // Fetch courses from API
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const params: Record<string, string> = {};
+        if (searchQuery) params.search = searchQuery;
+        if (selectedCategory !== 'All') params.category = selectedCategory;
+        if (selectedLevel !== 'All Levels') params.level = selectedLevel.toUpperCase();
+
+        const response = await coursesApi.getAll(params);
+        setCourses(response.data.data || response.data.courses || []);
+      } catch (err) {
+        console.error('Failed to fetch courses:', err);
+        setError('Failed to load courses. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, [searchQuery, selectedCategory, selectedLevel]);
+
+  // Fetch categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await coursesApi.getCategories();
+        const categoryNames = response.data.map((c: { category: string }) => c.category);
+        setCategories(['All', ...categoryNames]);
+      } catch (err) {
+        console.error('Failed to fetch categories:', err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const hasActiveFilters = selectedCategory !== 'All' || selectedLevel !== 'All Levels';
 
@@ -126,8 +136,8 @@ export default function CoursesPage() {
                 <Input
                   type="text"
                   placeholder="Search courses..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
                   className="pl-10 sm:pl-12 h-11 sm:h-12 text-base bg-white border-2 border-black shadow-brutal"
                 />
               </div>
@@ -209,48 +219,70 @@ export default function CoursesPage() {
             </div>
 
             {/* Results count */}
-            <p className="text-sm text-gray-600 mb-4 sm:mb-6">
-              {filteredCourses.length} {filteredCourses.length === 1 ? 'course' : 'courses'} found
-            </p>
+            {!loading && (
+              <p className="text-sm text-gray-600 mb-4 sm:mb-6">
+                {courses.length} {courses.length === 1 ? 'course' : 'courses'} found
+              </p>
+            )}
+
+            {/* Loading State */}
+            {loading && (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                <span className="ml-3 text-gray-500">Loading courses...</span>
+              </div>
+            )}
+
+            {/* Error State */}
+            {error && !loading && (
+              <div className="text-center py-12 sm:py-16">
+                <p className="text-red-500 text-base sm:text-lg mb-4">{error}</p>
+                <Button variant="outline" onClick={() => window.location.reload()}>
+                  Try Again
+                </Button>
+              </div>
+            )}
 
             {/* Course Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {filteredCourses.map((course) => (
-                <Card
-                  key={course.id}
-                  className="hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-brutal-sm transition-all h-full flex flex-col"
-                >
-                  <CardHeader className="pb-3">
-                    <Badge variant={getLevelVariant(course.level)} className="w-fit mb-3">
-                      {getLevelLabel(course.level)}
-                    </Badge>
-                    <h3 className="text-lg sm:text-xl font-bold">{course.title}</h3>
-                  </CardHeader>
-                  <CardContent className="flex-1 flex flex-col">
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2 flex-1">
-                      {course.description}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-4">
-                      {course.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="px-2 py-0.5 sm:py-1 text-xs bg-gray-100 rounded-md"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                    <Link href={`/courses/${course.slug}`} className="mt-auto">
-                      <Button variant="outline" size="sm" className="w-full">
-                        Start Learning
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            {!loading && !error && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {courses.map((course) => (
+                  <Card
+                    key={course.id}
+                    className="hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-brutal-sm transition-all h-full flex flex-col"
+                  >
+                    <CardHeader className="pb-3">
+                      <Badge variant={getLevelVariant(course.level)} className="w-fit mb-3">
+                        {getLevelLabel(course.level)}
+                      </Badge>
+                      <h3 className="text-lg sm:text-xl font-bold">{course.title}</h3>
+                    </CardHeader>
+                    <CardContent className="flex-1 flex flex-col">
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2 flex-1">
+                        {course.shortDescription || course.description}
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-4">
+                        {course.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="px-2 py-0.5 sm:py-1 text-xs bg-gray-100 rounded-md"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                      <Link href={`/courses/${course.slug}`} className="mt-auto">
+                        <Button variant="outline" size="sm" className="w-full">
+                          Start Learning
+                        </Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
 
-            {filteredCourses.length === 0 && (
+            {!loading && !error && courses.length === 0 && (
               <div className="text-center py-12 sm:py-16">
                 <p className="text-gray-500 text-base sm:text-lg mb-4">
                   No courses found matching your criteria.
