@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -42,8 +43,14 @@ export function Header() {
       <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center shrink-0">
-          <span className="text-xl sm:text-2xl font-bold">4</span>
-          <span className="text-xl sm:text-2xl font-bold text-brand">HACKS</span>
+          <Image
+            src="/images/logo-lg.png"
+            alt="4HACKS"
+            width={120}
+            height={40}
+            className="h-8 sm:h-10 w-auto"
+            priority
+          />
         </Link>
 
         {/* Desktop Navigation */}
