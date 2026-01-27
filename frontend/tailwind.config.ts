@@ -64,6 +64,9 @@ const config: Config = {
           800: '#854D0E',
           900: '#713F12',
         },
+        orange: {
+          DEFAULT: 'hsl(var(--orange))',
+        },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
