@@ -39,7 +39,7 @@ export function Header() {
   }, [mobileMenuOpen]);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b-2 border-black bg-white">
+    <header className="sticky top-0 z-50 w-full border-b-2 border-black bg-[#FCFAF7]">
       <div className="container mx-auto flex h-14 sm:h-16 md:h-18 items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center shrink-0">
@@ -127,7 +127,7 @@ export function Header() {
       {/* Mobile Menu */}
       <div
         className={cn(
-          'lg:hidden fixed left-0 right-0 top-[calc(3.5rem+2px)] sm:top-[calc(4rem+2px)] md:top-[calc(4.5rem+2px)] bg-white border-b-2 border-black z-50 transition-all duration-300 ease-in-out',
+          'lg:hidden fixed left-0 right-0 top-[calc(3.5rem+2px)] sm:top-[calc(4rem+2px)] md:top-[calc(4.5rem+2px)] bg-[#FCFAF7] border-b-2 border-black z-50 transition-all duration-300 ease-in-out',
           mobileMenuOpen
             ? 'opacity-100 translate-y-0'
             : 'opacity-0 -translate-y-2 pointer-events-none'
