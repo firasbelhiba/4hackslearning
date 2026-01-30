@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useAuthStore } from '@/stores/auth-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,9 +40,14 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-zinc-950 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            <span className="text-[#D6FF25]">4</span>HACKS
-          </h1>
+          <Image
+            src="/images/logo-lg.png"
+            alt="4HACKS"
+            width={150}
+            height={50}
+            className="mx-auto mb-3"
+            priority
+          />
           <p className="text-zinc-400">Organizer Portal</p>
         </div>
 
