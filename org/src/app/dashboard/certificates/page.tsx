@@ -1,100 +1,67 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useAuthStore } from '@/stores/auth-store';
-import { certificateTemplatesApi } from '@/lib/api';
+import { certificatesApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/components/ui/use-toast';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Plus,
+  Search,
   Award,
-  Edit,
-  Trash2,
-  Check,
-  Palette,
+  Eye,
+  Download,
+  ExternalLink,
+  Settings,
+  User,
+  Calendar,
+  BookOpen,
 } from 'lucide-react';
 
-interface TemplateConfig {
-  backgroundColor: string;
-  textColor: string;
-  accentColor: string;
-  logoPosition: string;
-  borderStyle: string;
-  fontFamily: string;
-  showOrganizationLogo: boolean;
-  showStudentName: boolean;
-  showCourseName: boolean;
-  showCompletionDate: boolean;
-  showCertificateId: boolean;
-}
-
-interface CertificateTemplate {
+interface Certificate {
   id: string;
-  name: string;
-  isDefault: boolean;
-  templateConfig: TemplateConfig;
-  createdAt: string;
+  uniqueCode: string;
+  pdfUrl: string | null;
+  issuedAt: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    avatar: string | null;
+  };
+  course: {
+    id: string;
+    title: string;
+    slug: string;
+    level: string;
+  };
 }
-
-const defaultConfig: TemplateConfig = {
-  backgroundColor: '#ffffff',
-  textColor: '#000000',
-  accentColor: '#D6FF25',
-  logoPosition: 'top-center',
-  borderStyle: 'double',
-  fontFamily: 'Outfit',
-  showOrganizationLogo: true,
-  showStudentName: true,
-  showCourseName: true,
-  showCompletionDate: true,
-  showCertificateId: true,
-};
 
 export default function CertificatesPage() {
   const { currentOrganization } = useAuthStore();
-  const [templates, setTemplates] = useState<CertificateTemplate[]>([]);
+  const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Modal state
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<CertificateTemplate | null>(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    templateConfig: defaultConfig,
-  });
-
-  // Delete modal state
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [templateToDelete, setTemplateToDelete] = useState<CertificateTemplate | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    fetchTemplates();
+    fetchCertificates();
   }, [currentOrganization]);
 
-  const fetchTemplates = async () => {
+  const fetchCertificates = async () => {
     if (!currentOrganization) return;
 
     try {
       setIsLoading(true);
-      const response = await certificateTemplatesApi.getAll(currentOrganization.id);
-      setTemplates(response.data || []);
+      const response = await certificatesApi.getOrganizationCertificates(currentOrganization.id);
+      setCertificates(response.data || []);
     } catch (error) {
-      console.error('Failed to fetch templates:', error);
+      console.error('Failed to fetch certificates:', error);
       toast({
         title: 'Error',
-        description: 'Failed to load certificate templates',
+        description: 'Failed to load certificates',
         variant: 'destructive',
       });
     } finally {
@@ -102,84 +69,24 @@ export default function CertificatesPage() {
     }
   };
 
-  const handleOpenModal = (template?: CertificateTemplate) => {
-    if (template) {
-      setEditingTemplate(template);
-      setFormData({
-        name: template.name,
-        templateConfig: { ...defaultConfig, ...template.templateConfig },
-      });
-    } else {
-      setEditingTemplate(null);
-      setFormData({ name: '', templateConfig: defaultConfig });
+  const filteredCertificates = certificates.filter((cert) =>
+    cert.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    cert.user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    cert.course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    cert.uniqueCode.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const getLevelBadgeVariant = (level: string) => {
+    switch (level) {
+      case 'BEGINNER':
+        return 'success';
+      case 'INTERMEDIATE':
+        return 'warning';
+      case 'ADVANCED':
+        return 'destructive';
+      default:
+        return 'secondary';
     }
-    setModalOpen(true);
-  };
-
-  const handleSave = async () => {
-    if (!currentOrganization) return;
-
-    try {
-      if (editingTemplate) {
-        await certificateTemplatesApi.update(
-          currentOrganization.id,
-          editingTemplate.id,
-          formData
-        );
-        toast({ title: 'Template updated', variant: 'success' });
-      } else {
-        await certificateTemplatesApi.create(currentOrganization.id, formData);
-        toast({ title: 'Template created', variant: 'success' });
-      }
-      fetchTemplates();
-      setModalOpen(false);
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.response?.data?.message || 'Failed to save template',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleSetDefault = async (templateId: string) => {
-    if (!currentOrganization) return;
-
-    try {
-      await certificateTemplatesApi.setDefault(currentOrganization.id, templateId);
-      toast({ title: 'Default template updated', variant: 'success' });
-      fetchTemplates();
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.response?.data?.message || 'Failed to set default template',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!currentOrganization || !templateToDelete) return;
-
-    try {
-      await certificateTemplatesApi.delete(currentOrganization.id, templateToDelete.id);
-      toast({ title: 'Template deleted', variant: 'success' });
-      fetchTemplates();
-      setDeleteModalOpen(false);
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.response?.data?.message || 'Failed to delete template',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const updateConfig = (key: keyof TemplateConfig, value: any) => {
-    setFormData({
-      ...formData,
-      templateConfig: { ...formData.templateConfig, [key]: value },
-    });
   };
 
   if (!currentOrganization) {
@@ -198,142 +105,175 @@ export default function CertificatesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-black">Certificate Templates</h1>
+          <h1 className="text-3xl font-bold text-black">Certificates</h1>
           <p className="text-gray-600 mt-1">
-            Customize how certificates look for your courses.
+            View all certificates issued to students in your organization.
           </p>
         </div>
-        <Button
-          onClick={() => handleOpenModal()}
-          variant="primary"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          New Template
-        </Button>
+        <Link href="/dashboard/certificates/templates">
+          <Button variant="outline">
+            <Settings className="h-4 w-4 mr-2" />
+            Manage Templates
+          </Button>
+        </Link>
       </div>
 
-      {/* Templates Grid */}
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+        <Input
+          placeholder="Search by student name, email, course, or certificate ID..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-11"
+        />
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="h-12 w-12 rounded-xl bg-brand/20 border-2 border-black flex items-center justify-center">
+              <Award className="h-6 w-6 text-black" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-black">{certificates.length}</p>
+              <p className="text-sm text-gray-600">Total Certificates</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="h-12 w-12 rounded-xl bg-blue-100 border-2 border-black flex items-center justify-center">
+              <User className="h-6 w-6 text-black" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-black">
+                {new Set(certificates.map(c => c.user.id)).size}
+              </p>
+              <p className="text-sm text-gray-600">Certified Students</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="h-12 w-12 rounded-xl bg-purple-100 border-2 border-black flex items-center justify-center">
+              <BookOpen className="h-6 w-6 text-black" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-black">
+                {new Set(certificates.map(c => c.course.id)).size}
+              </p>
+              <p className="text-sm text-gray-600">Courses with Certificates</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Certificates List */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <Card key={i} className="animate-pulse">
               <CardContent className="p-6">
-                <div className="h-40 bg-gray-200 rounded-lg mb-4"></div>
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 bg-gray-200 rounded-full"></div>
+                  <div className="flex-1">
+                    <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/3"></div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           ))}
         </div>
-      ) : templates.length === 0 ? (
+      ) : filteredCertificates.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <div className="h-16 w-16 rounded-xl border-2 border-black bg-gray-100 flex items-center justify-center mb-4 shadow-brutal-sm">
               <Award className="h-8 w-8 text-gray-400" />
             </div>
-            <h3 className="text-lg font-bold text-black mb-2">No templates yet</h3>
+            <h3 className="text-lg font-bold text-black mb-2">No certificates found</h3>
             <p className="text-gray-600 text-center mb-4">
-              Create your first certificate template to customize how certificates look.
+              {searchQuery
+                ? 'No certificates match your search.'
+                : 'No certificates have been issued yet. Students will receive certificates when they complete courses.'}
             </p>
-            <Button
-              onClick={() => handleOpenModal()}
-              variant="primary"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Create Template
-            </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {templates.map((template) => (
-            <Card key={template.id} className="group hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
-              <CardContent className="p-0">
-                {/* Preview */}
-                <div
-                  className="h-40 rounded-t-lg flex items-center justify-center relative"
-                  style={{
-                    backgroundColor: template.templateConfig?.backgroundColor || '#ffffff',
-                    borderBottom: `4px ${template.templateConfig?.borderStyle || 'solid'} ${template.templateConfig?.accentColor || '#D6FF25'}`,
-                  }}
-                >
-                  <div className="text-center">
-                    <Award
-                      className="h-10 w-10 mx-auto mb-2"
-                      style={{ color: template.templateConfig?.accentColor || '#D6FF25' }}
-                    />
-                    <p
-                      className="text-sm font-medium"
-                      style={{ color: template.templateConfig?.textColor || '#000000' }}
-                    >
-                      Certificate Preview
-                    </p>
+        <div className="space-y-4">
+          {filteredCertificates.map((certificate) => (
+            <Card key={certificate.id} className="hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4">
+                  {/* User Avatar */}
+                  <div className="h-12 w-12 rounded-full bg-brand/20 border-2 border-black flex items-center justify-center shrink-0">
+                    {certificate.user.avatar ? (
+                      <img
+                        src={certificate.user.avatar}
+                        alt={certificate.user.name}
+                        className="h-full w-full rounded-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-lg font-bold text-black">
+                        {certificate.user.name.charAt(0).toUpperCase()}
+                      </span>
+                    )}
                   </div>
 
-                  {/* Actions overlay */}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 rounded-t-lg">
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => handleOpenModal(template)}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
-                    {!template.isDefault && (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => handleSetDefault(template.id)}
-                      >
-                        <Check className="h-4 w-4 mr-1" />
-                        Set Default
+                  {/* Certificate Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-bold text-black truncate">{certificate.user.name}</h3>
+                      <Badge variant={getLevelBadgeVariant(certificate.course.level)} className="shrink-0">
+                        {certificate.course.level}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 truncate">{certificate.user.email}</p>
+                    <div className="flex items-center gap-4 mt-2 text-sm">
+                      <span className="flex items-center gap-1 text-gray-600">
+                        <BookOpen className="h-3.5 w-3.5" />
+                        {certificate.course.title}
+                      </span>
+                      <span className="flex items-center gap-1 text-gray-600">
+                        <Calendar className="h-3.5 w-3.5" />
+                        {new Date(certificate.issuedAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Certificate Code */}
+                  <div className="hidden md:block text-right">
+                    <p className="text-xs text-gray-500 mb-1">Certificate ID</p>
+                    <code className="text-sm font-mono bg-gray-100 px-2 py-1 rounded border border-gray-200">
+                      {certificate.uniqueCode}
+                    </code>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Link href={`/dashboard/certificates/${certificate.id}`}>
+                      <Button size="sm" variant="outline">
+                        <Eye className="h-4 w-4" />
                       </Button>
+                    </Link>
+                    {certificate.pdfUrl && (
+                      <a href={certificate.pdfUrl} target="_blank" rel="noopener noreferrer">
+                        <Button size="sm" variant="outline">
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </a>
                     )}
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-bold text-black">{template.name}</h3>
-                    {template.isDefault && (
-                      <Badge variant="success" className="ml-2">Default</Badge>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2 mb-4">
-                    <div
-                      className="h-5 w-5 rounded-lg border-2 border-black"
-                      style={{ backgroundColor: template.templateConfig?.backgroundColor }}
-                      title="Background"
-                    />
-                    <div
-                      className="h-5 w-5 rounded-lg border-2 border-black"
-                      style={{ backgroundColor: template.templateConfig?.textColor }}
-                      title="Text"
-                    />
-                    <div
-                      className="h-5 w-5 rounded-lg border-2 border-black"
-                      style={{ backgroundColor: template.templateConfig?.accentColor }}
-                      title="Accent"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-600 font-medium">
-                      {new Date(template.createdAt).toLocaleDateString()}
-                    </span>
-                    {!template.isDefault && (
-                      <button
-                        onClick={() => {
-                          setTemplateToDelete(template);
-                          setDeleteModalOpen(true);
-                        }}
-                        className="p-1 rounded border-2 border-transparent hover:border-red-500 hover:bg-red-50 text-gray-500 hover:text-red-500 transition-all"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    )}
+                    <a
+                      href={`/verify/${certificate.uniqueCode}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button size="sm" variant="primary">
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    </a>
                   </div>
                 </div>
               </CardContent>
@@ -341,204 +281,6 @@ export default function CertificatesPage() {
           ))}
         </div>
       )}
-
-      {/* Create/Edit Modal */}
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>
-              {editingTemplate ? 'Edit Template' : 'Create Template'}
-            </DialogTitle>
-            <DialogDescription>
-              Customize how your certificates will look.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid grid-cols-2 gap-6">
-            {/* Left: Form */}
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Template Name</Label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="My Template"
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-2">
-                  <Label className="text-xs">Background</Label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={formData.templateConfig.backgroundColor}
-                      onChange={(e) => updateConfig('backgroundColor', e.target.value)}
-                      className="h-8 w-8 rounded-lg border-2 border-black cursor-pointer"
-                    />
-                    <Input
-                      value={formData.templateConfig.backgroundColor}
-                      onChange={(e) => updateConfig('backgroundColor', e.target.value)}
-                      className="text-xs h-8"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-xs">Text Color</Label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={formData.templateConfig.textColor}
-                      onChange={(e) => updateConfig('textColor', e.target.value)}
-                      className="h-8 w-8 rounded-lg border-2 border-black cursor-pointer"
-                    />
-                    <Input
-                      value={formData.templateConfig.textColor}
-                      onChange={(e) => updateConfig('textColor', e.target.value)}
-                      className="text-xs h-8"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-xs">Accent Color</Label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={formData.templateConfig.accentColor}
-                      onChange={(e) => updateConfig('accentColor', e.target.value)}
-                      className="h-8 w-8 rounded-lg border-2 border-black cursor-pointer"
-                    />
-                    <Input
-                      value={formData.templateConfig.accentColor}
-                      onChange={(e) => updateConfig('accentColor', e.target.value)}
-                      className="text-xs h-8"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3 pt-2">
-                <Label className="text-sm">Display Options</Label>
-                {[
-                  { key: 'showOrganizationLogo', label: 'Show Organization Logo' },
-                  { key: 'showStudentName', label: 'Show Student Name' },
-                  { key: 'showCourseName', label: 'Show Course Name' },
-                  { key: 'showCompletionDate', label: 'Show Completion Date' },
-                  { key: 'showCertificateId', label: 'Show Certificate ID' },
-                ].map((option) => (
-                  <label key={option.key} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.templateConfig[option.key as keyof TemplateConfig] as boolean}
-                      onChange={(e) => updateConfig(option.key as keyof TemplateConfig, e.target.checked)}
-                      className="rounded border-2 border-black h-4 w-4 text-brand focus:ring-brand"
-                    />
-                    <span className="text-black text-sm font-medium">{option.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Right: Preview */}
-            <div>
-              <Label className="text-sm mb-2 block">Preview</Label>
-              <div
-                className="rounded-lg p-4 min-h-[200px] flex flex-col items-center justify-center"
-                style={{
-                  backgroundColor: formData.templateConfig.backgroundColor,
-                  border: `2px ${formData.templateConfig.borderStyle} ${formData.templateConfig.accentColor}`,
-                }}
-              >
-                {formData.templateConfig.showOrganizationLogo && (
-                  <Award
-                    className="h-8 w-8 mb-2"
-                    style={{ color: formData.templateConfig.accentColor }}
-                  />
-                )}
-                <p
-                  className="text-xs font-semibold mb-1"
-                  style={{ color: formData.templateConfig.textColor }}
-                >
-                  CERTIFICATE OF COMPLETION
-                </p>
-                {formData.templateConfig.showStudentName && (
-                  <p
-                    className="text-lg font-bold"
-                    style={{ color: formData.templateConfig.textColor }}
-                  >
-                    John Doe
-                  </p>
-                )}
-                {formData.templateConfig.showCourseName && (
-                  <p
-                    className="text-xs mt-2"
-                    style={{ color: formData.templateConfig.textColor, opacity: 0.8 }}
-                  >
-                    Completed: Introduction to Blockchain
-                  </p>
-                )}
-                {formData.templateConfig.showCompletionDate && (
-                  <p
-                    className="text-xs mt-1"
-                    style={{ color: formData.templateConfig.textColor, opacity: 0.6 }}
-                  >
-                    January 28, 2026
-                  </p>
-                )}
-                {formData.templateConfig.showCertificateId && (
-                  <p
-                    className="text-[10px] mt-2"
-                    style={{ color: formData.templateConfig.textColor, opacity: 0.4 }}
-                  >
-                    ID: CERT-2026-XXXX
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSave}
-              variant="primary"
-            >
-              {editingTemplate ? 'Update' : 'Create'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Modal */}
-      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Template</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete "{templateToDelete?.name}"? This action cannot be
-              undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

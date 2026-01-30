@@ -55,12 +55,17 @@ export class OrganizationsController {
     return this.organizationsService.findByUserId(userId);
   }
 
-  @Get(':slug')
-  @ApiOperation({ summary: 'Get organization by slug' })
+  @Get(':idOrSlug')
+  @ApiOperation({ summary: 'Get organization by ID or slug' })
   @ApiResponse({ status: 200, description: 'Organization found' })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  async findBySlug(@Param('slug') slug: string) {
-    return this.organizationsService.findBySlug(slug);
+  async findOne(@Param('idOrSlug') idOrSlug: string) {
+    // Check if it's a UUID (ID) or a slug
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
+    if (isUuid) {
+      return this.organizationsService.findById(idOrSlug);
+    }
+    return this.organizationsService.findBySlug(idOrSlug);
   }
 
   @Patch(':id')

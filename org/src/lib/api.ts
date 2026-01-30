@@ -40,8 +40,8 @@ api.interceptors.response.use(
 
           const { accessToken, refreshToken: newRefreshToken } = response.data;
 
-          Cookies.set('accessToken', accessToken, { expires: 1 / 96 });
-          Cookies.set('refreshToken', newRefreshToken, { expires: 7 });
+          Cookies.set('accessToken', accessToken, { expires: 1 / 96, path: '/' });
+          Cookies.set('refreshToken', newRefreshToken, { expires: 7, path: '/' });
 
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return api(originalRequest);
@@ -133,6 +133,16 @@ export const certificateTemplatesApi = {
     api.delete(`/organizations/${orgId}/certificate-templates/${templateId}`),
   setDefault: (orgId: string, templateId: string) =>
     api.post(`/organizations/${orgId}/certificate-templates/${templateId}/set-default`),
+};
+
+// Certificates API (issued certificates)
+export const certificatesApi = {
+  getOrganizationCertificates: (orgId: string) =>
+    api.get(`/certificates/organization/${orgId}`),
+  getById: (id: string) =>
+    api.get(`/certificates/${id}`),
+  verify: (code: string) =>
+    api.get(`/certificates/verify/${code}`),
 };
 
 // Upload API (Cloudinary)

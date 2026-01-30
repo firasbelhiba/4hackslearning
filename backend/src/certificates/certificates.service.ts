@@ -49,6 +49,35 @@ export class CertificatesService {
     });
   }
 
+  async findOrganizationCertificates(organizationId: string) {
+    return this.prisma.certificate.findMany({
+      where: {
+        course: {
+          organizationId,
+        },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+        course: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            level: true,
+          },
+        },
+      },
+      orderBy: { issuedAt: 'desc' },
+    });
+  }
+
   async findByCode(code: string) {
     const certificate = await this.prisma.certificate.findUnique({
       where: { uniqueCode: code },

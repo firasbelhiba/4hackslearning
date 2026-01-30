@@ -28,6 +28,15 @@ export class CertificatesController {
     return this.certificatesService.findUserCertificates(userId);
   }
 
+  @Get('organization/:organizationId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all certificates for an organization' })
+  @ApiResponse({ status: 200, description: 'List of organization certificates' })
+  async findOrganizationCertificates(@Param('organizationId') organizationId: string) {
+    return this.certificatesService.findOrganizationCertificates(organizationId);
+  }
+
   @Get('verify/:code')
   @ApiOperation({ summary: 'Verify a certificate by code (public)' })
   @ApiResponse({ status: 200, description: 'Certificate verification result' })
