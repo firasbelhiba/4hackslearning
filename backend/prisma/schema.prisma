@@ -34,6 +34,19 @@ enum ResourceType {
   LINK
   CODE
   FILE
+  VIDEO
+  IMAGE
+}
+
+enum LessonType {
+  VIDEO
+  ARTICLE
+  QUIZ
+}
+
+enum LessonStatus {
+  DRAFT
+  PUBLISHED
 }
 
 enum QuestionType {
@@ -132,12 +145,20 @@ model Course {
   description      String
   shortDescription String
   thumbnail        String?
+  promoVideoUrl    String?      // Promotional video for course preview
   level            CourseLevel  @default(BEGINNER)
   category         String
   tags             String[]
   price            Float        @default(0)
   isFree           Boolean      @default(true)
   isPublished      Boolean      @default(false)
+
+  // Course metadata (Udemy-style)
+  requirements     String[]     // What students need before taking the course
+  targetAudience   String[]     // Who this course is for
+  outcomes         String[]     // What students will learn (learning objectives)
+  language         String       @default("English")
+  totalDuration    Int?         // Total duration in seconds (calculated)
 
   // Relations
   instructorId     String
@@ -159,6 +180,7 @@ model Module {
   title       String
   description String?
   order       Int
+  outcomes    String[] // What students will learn in this section
 
   // Relations
   courseId    String
@@ -169,19 +191,21 @@ model Module {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@unique([courseId, order])
   @@map("modules")
 }
 
 model Lesson {
-  id            String     @id @default(uuid())
+  id            String       @id @default(uuid())
   title         String
   description   String?
-  content       String?
+  content       String?      // Rich text content for article lessons
   videoUrl      String?
-  vimeoVideoId  String?    // Vimeo video ID for embedded player
-  videoDuration Int?       // Duration in seconds
+  vimeoVideoId  String?      // Vimeo video ID for embedded player
+  videoDuration Int?         // Duration in seconds
   order         Int
+  type          LessonType   @default(VIDEO)
+  status        LessonStatus @default(DRAFT)
+  isFreePreview Boolean      @default(false) // Allow free preview for marketing
 
   // Relations
   moduleId      String
@@ -192,15 +216,17 @@ model Lesson {
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
-  @@unique([moduleId, order])
   @@map("lessons")
 }
 
 model Resource {
-  id       String       @id @default(uuid())
-  title    String
-  type     ResourceType
-  url      String
+  id          String       @id @default(uuid())
+  title       String
+  type        ResourceType
+  url         String
+  fileSize    Int?         // File size in bytes
+  order       Int          @default(0)
+  isDownloadable Boolean   @default(true)
 
   // Relations
   lessonId String

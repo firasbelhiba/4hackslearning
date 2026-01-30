@@ -108,13 +108,26 @@ export const orgCoursesApi = {
     api.patch(`/organizations/${orgId}/courses/${courseId}/modules/${moduleId}`, data),
   deleteModule: (orgId: string, courseId: string, moduleId: string) =>
     api.delete(`/organizations/${orgId}/courses/${courseId}/modules/${moduleId}`),
+  reorderModules: (orgId: string, courseId: string, modules: { id: string; order: number }[]) =>
+    api.post(`/organizations/${orgId}/courses/${courseId}/modules/reorder`, { modules }),
   // Lessons
   createLesson: (orgId: string, courseId: string, moduleId: string, data: any) =>
     api.post(`/organizations/${orgId}/courses/${courseId}/modules/${moduleId}/lessons`, data),
+  getLesson: (orgId: string, courseId: string, lessonId: string) =>
+    api.get(`/organizations/${orgId}/courses/${courseId}/lessons/${lessonId}`),
   updateLesson: (orgId: string, courseId: string, lessonId: string, data: any) =>
     api.patch(`/organizations/${orgId}/courses/${courseId}/lessons/${lessonId}`, data),
   deleteLesson: (orgId: string, courseId: string, lessonId: string) =>
     api.delete(`/organizations/${orgId}/courses/${courseId}/lessons/${lessonId}`),
+  reorderLessons: (orgId: string, courseId: string, lessons: { id: string; order: number; moduleId?: string }[]) =>
+    api.post(`/organizations/${orgId}/courses/${courseId}/lessons/reorder`, { lessons }),
+  // Resources
+  createResource: (orgId: string, courseId: string, lessonId: string, data: { title: string; type: string; url: string; fileSize?: number; isDownloadable?: boolean }) =>
+    api.post(`/organizations/${orgId}/courses/${courseId}/lessons/${lessonId}/resources`, data),
+  updateResource: (orgId: string, courseId: string, resourceId: string, data: any) =>
+    api.patch(`/organizations/${orgId}/courses/${courseId}/resources/${resourceId}`, data),
+  deleteResource: (orgId: string, courseId: string, resourceId: string) =>
+    api.delete(`/organizations/${orgId}/courses/${courseId}/resources/${resourceId}`),
 };
 
 // Certificate Templates API

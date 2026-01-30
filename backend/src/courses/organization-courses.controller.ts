@@ -20,6 +20,8 @@ import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { CreateModuleDto } from './dto/create-module.dto';
 import { CreateLessonDto } from './dto/create-lesson.dto';
+import { ReorderModulesDto } from './dto/reorder-modules.dto';
+import { ReorderLessonsDto } from './dto/reorder-lessons.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
@@ -46,10 +48,12 @@ export class OrganizationCoursesController {
   @ApiResponse({ status: 200, description: 'List of courses' })
   async findAll(
     @Param('organizationId') organizationId: string,
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 50,
+    @Query('page') pageParam?: string,
+    @Query('limit') limitParam?: string,
     @Query('isPublished') isPublished?: string,
   ) {
+    const page = parseInt(pageParam || '1', 10) || 1;
+    const limit = parseInt(limitParam || '50', 10) || 50;
     const skip = (page - 1) * limit;
     const publishedFilter =
       isPublished === 'true' ? true : isPublished === 'false' ? false : undefined;
@@ -145,6 +149,17 @@ export class OrganizationCoursesController {
     return { message: 'Module deleted successfully' };
   }
 
+  @Post(':courseId/modules/reorder')
+  @ApiOperation({ summary: 'Reorder modules in a course' })
+  async reorderModules(
+    @Param('courseId') courseId: string,
+    @CurrentUser('id') userId: string,
+    @Body() dto: ReorderModulesDto,
+  ) {
+    await this.coursesService.verifyOrganizationAccess(courseId, userId);
+    return this.coursesService.reorderModules(courseId, dto);
+  }
+
   // Lesson endpoints for organization courses
   @Post(':courseId/modules/:moduleId/lessons')
   @ApiOperation({ summary: 'Add a lesson to a module' })
@@ -180,5 +195,64 @@ export class OrganizationCoursesController {
     await this.coursesService.verifyOrganizationAccess(courseId, userId);
     await this.coursesService.deleteLesson(lessonId);
     return { message: 'Lesson deleted successfully' };
+  }
+
+  @Get(':courseId/lessons/:lessonId')
+  @ApiOperation({ summary: 'Get a specific lesson with details' })
+  async getLesson(
+    @Param('courseId') courseId: string,
+    @Param('lessonId') lessonId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    await this.coursesService.verifyOrganizationAccess(courseId, userId);
+    return this.coursesService.findLessonById(lessonId);
+  }
+
+  @Post(':courseId/lessons/reorder')
+  @ApiOperation({ summary: 'Reorder lessons in a course' })
+  async reorderLessons(
+    @Param('courseId') courseId: string,
+    @CurrentUser('id') userId: string,
+    @Body() dto: ReorderLessonsDto,
+  ) {
+    await this.coursesService.verifyOrganizationAccess(courseId, userId);
+    return this.coursesService.reorderLessons(courseId, dto);
+  }
+
+  // Resource endpoints
+  @Post(':courseId/lessons/:lessonId/resources')
+  @ApiOperation({ summary: 'Add a resource to a lesson' })
+  async createResource(
+    @Param('courseId') courseId: string,
+    @Param('lessonId') lessonId: string,
+    @CurrentUser('id') userId: string,
+    @Body() dto: { title: string; type: string; url: string; fileSize?: number; isDownloadable?: boolean },
+  ) {
+    await this.coursesService.verifyOrganizationAccess(courseId, userId);
+    return this.coursesService.createResource(lessonId, dto);
+  }
+
+  @Patch(':courseId/resources/:resourceId')
+  @ApiOperation({ summary: 'Update a resource' })
+  async updateResource(
+    @Param('courseId') courseId: string,
+    @Param('resourceId') resourceId: string,
+    @CurrentUser('id') userId: string,
+    @Body() dto: Partial<{ title: string; type: string; url: string; fileSize?: number; isDownloadable?: boolean }>,
+  ) {
+    await this.coursesService.verifyOrganizationAccess(courseId, userId);
+    return this.coursesService.updateResource(resourceId, dto);
+  }
+
+  @Delete(':courseId/resources/:resourceId')
+  @ApiOperation({ summary: 'Delete a resource' })
+  async deleteResource(
+    @Param('courseId') courseId: string,
+    @Param('resourceId') resourceId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    await this.coursesService.verifyOrganizationAccess(courseId, userId);
+    await this.coursesService.deleteResource(resourceId);
+    return { message: 'Resource deleted successfully' };
   }
 }

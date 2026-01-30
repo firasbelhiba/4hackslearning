@@ -11,6 +11,8 @@ import { UpdateCourseDto } from './dto/update-course.dto';
 import { CreateModuleDto } from './dto/create-module.dto';
 import { CreateLessonDto } from './dto/create-lesson.dto';
 import { CourseFiltersDto } from './dto/course-filters.dto';
+import { ReorderModulesDto } from './dto/reorder-modules.dto';
+import { ReorderLessonsDto } from './dto/reorder-lessons.dto';
 
 @Injectable()
 export class CoursesService {
@@ -193,6 +195,15 @@ export class CoursesService {
   async createModule(courseId: string, dto: CreateModuleDto) {
     await this.findById(courseId);
 
+    // Auto-calculate order if not provided
+    if (dto.order === undefined) {
+      const lastModule = await this.prisma.module.findFirst({
+        where: { courseId },
+        orderBy: { order: 'desc' },
+      });
+      dto.order = lastModule ? lastModule.order + 1 : 0;
+    }
+
     return this.prisma.module.create({
       data: {
         ...dto,
@@ -209,6 +220,11 @@ export class CoursesService {
     return this.prisma.module.update({
       where: { id: moduleId },
       data: dto,
+      include: {
+        lessons: {
+          orderBy: { order: 'asc' },
+        },
+      },
     });
   }
 
@@ -216,8 +232,37 @@ export class CoursesService {
     await this.prisma.module.delete({ where: { id: moduleId } });
   }
 
+  /**
+   * Reorder modules within a course (drag-drop support)
+   */
+  async reorderModules(courseId: string, dto: ReorderModulesDto) {
+    await this.findById(courseId);
+
+    // Update all module orders in a transaction
+    const updates = dto.modules.map((item) =>
+      this.prisma.module.update({
+        where: { id: item.id },
+        data: { order: item.order },
+      }),
+    );
+
+    await this.prisma.$transaction(updates);
+
+    // Return updated course with modules
+    return this.findById(courseId);
+  }
+
   // Lesson operations
   async createLesson(moduleId: string, dto: CreateLessonDto) {
+    // Auto-calculate order if not provided
+    if (dto.order === undefined) {
+      const lastLesson = await this.prisma.lesson.findFirst({
+        where: { moduleId },
+        orderBy: { order: 'desc' },
+      });
+      dto.order = lastLesson ? lastLesson.order + 1 : 0;
+    }
+
     return this.prisma.lesson.create({
       data: {
         ...dto,
@@ -227,15 +272,96 @@ export class CoursesService {
     });
   }
 
+  async findLessonById(lessonId: string) {
+    const lesson = await this.prisma.lesson.findUnique({
+      where: { id: lessonId },
+      include: {
+        resources: {
+          orderBy: { order: 'asc' },
+        },
+        module: {
+          select: {
+            id: true,
+            title: true,
+            courseId: true,
+            course: {
+              select: { id: true, title: true, organizationId: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!lesson) {
+      throw new NotFoundException('Lesson not found');
+    }
+
+    return lesson;
+  }
+
   async updateLesson(lessonId: string, dto: Partial<CreateLessonDto>) {
     return this.prisma.lesson.update({
       where: { id: lessonId },
       data: dto,
+      include: { resources: true },
     });
   }
 
   async deleteLesson(lessonId: string) {
     await this.prisma.lesson.delete({ where: { id: lessonId } });
+  }
+
+  /**
+   * Reorder lessons within a module or move between modules (drag-drop support)
+   */
+  async reorderLessons(courseId: string, dto: ReorderLessonsDto) {
+    await this.findById(courseId);
+
+    // Update all lesson orders (and optionally moduleId) in a transaction
+    const updates = dto.lessons.map((item) => {
+      const data: any = { order: item.order };
+      if (item.moduleId) {
+        data.moduleId = item.moduleId;
+      }
+      return this.prisma.lesson.update({
+        where: { id: item.id },
+        data,
+      });
+    });
+
+    await this.prisma.$transaction(updates);
+
+    // Return updated course with modules and lessons
+    return this.findById(courseId);
+  }
+
+  // Resource operations
+  async createResource(lessonId: string, dto: { title: string; type: string; url: string; fileSize?: number; isDownloadable?: boolean }) {
+    // Auto-calculate order
+    const lastResource = await this.prisma.resource.findFirst({
+      where: { lessonId },
+      orderBy: { order: 'desc' },
+    });
+    const order = lastResource ? lastResource.order + 1 : 0;
+
+    return this.prisma.resource.create({
+      data: {
+        ...dto,
+        order,
+        lessonId,
+      } as any,
+    });
+  }
+
+  async updateResource(resourceId: string, dto: Partial<{ title: string; type: string; url: string; fileSize?: number; isDownloadable?: boolean }>) {
+    return this.prisma.resource.update({
+      where: { id: resourceId },
+      data: dto as any,
+    });
+  }
+
+  async deleteResource(resourceId: string) {
+    await this.prisma.resource.delete({ where: { id: resourceId } });
   }
 
   async getCategories() {
