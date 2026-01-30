@@ -53,10 +53,10 @@ export default function DashboardPage() {
   if (!currentOrganization) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-white mb-2">No Organization Selected</h2>
-          <p className="text-zinc-400">Please select an organization from the sidebar.</p>
-        </div>
+        <Card className="p-8 text-center">
+          <h2 className="text-xl font-bold text-black mb-2">No Organization Selected</h2>
+          <p className="text-gray-600">Please select an organization from the sidebar.</p>
+        </Card>
       </div>
     );
   }
@@ -65,65 +65,73 @@ export default function DashboardPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-        <p className="text-zinc-400 mt-1">
+        <h1 className="text-3xl font-bold text-black">Dashboard</h1>
+        <p className="text-gray-600 mt-1">
           Welcome back! Here's an overview of {currentOrganization.name}.
         </p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-zinc-900 border-zinc-800">
+        <Card className="bg-brand">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">
+            <CardTitle className="text-sm font-bold text-black">
               Total Courses
             </CardTitle>
-            <BookOpen className="h-4 w-4 text-[#D6FF25]" />
+            <div className="p-2 bg-black rounded-lg">
+              <BookOpen className="h-4 w-4 text-brand" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-3xl font-bold text-black">
               {isLoading ? '...' : stats.totalCourses}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-zinc-900 border-zinc-800">
+        <Card className="bg-green-400">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">
+            <CardTitle className="text-sm font-bold text-black">
               Published
             </CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-500" />
+            <div className="p-2 bg-black rounded-lg">
+              <TrendingUp className="h-4 w-4 text-green-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-3xl font-bold text-black">
               {isLoading ? '...' : stats.publishedCourses}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-zinc-900 border-zinc-800">
+        <Card className="bg-blue-400">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">
+            <CardTitle className="text-sm font-bold text-black">
               Total Students
             </CardTitle>
-            <Users className="h-4 w-4 text-blue-500" />
+            <div className="p-2 bg-black rounded-lg">
+              <Users className="h-4 w-4 text-blue-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-3xl font-bold text-black">
               {isLoading ? '...' : stats.totalStudents}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-zinc-900 border-zinc-800">
+        <Card className="bg-yellow-400">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-400">
+            <CardTitle className="text-sm font-bold text-black">
               Certificates Issued
             </CardTitle>
-            <Award className="h-4 w-4 text-yellow-500" />
+            <div className="p-2 bg-black rounded-lg">
+              <Award className="h-4 w-4 text-yellow-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-3xl font-bold text-black">
               {isLoading ? '...' : stats.totalCertificates}
             </div>
           </CardContent>
@@ -131,41 +139,43 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent Courses */}
-      <Card className="bg-zinc-900 border-zinc-800">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-white">Recent Courses</CardTitle>
+          <CardTitle className="text-xl text-black">Recent Courses</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-zinc-400">Loading...</div>
+            <div className="text-gray-600">Loading...</div>
           ) : recentCourses.length === 0 ? (
             <div className="text-center py-8">
-              <BookOpen className="h-12 w-12 text-zinc-700 mx-auto mb-3" />
-              <p className="text-zinc-400">No courses yet</p>
-              <p className="text-zinc-500 text-sm">Create your first course to get started</p>
+              <div className="h-16 w-16 rounded-xl border-2 border-black bg-gray-100 flex items-center justify-center mx-auto mb-3 shadow-brutal-sm">
+                <BookOpen className="h-8 w-8 text-gray-400" />
+              </div>
+              <p className="text-black font-bold">No courses yet</p>
+              <p className="text-gray-600 text-sm">Create your first course to get started</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {recentCourses.map((course) => (
                 <div
                   key={course.id}
-                  className="flex items-center justify-between p-4 rounded-lg bg-zinc-800/50"
+                  className="flex items-center justify-between p-4 rounded-lg border-2 border-black bg-gray-50 shadow-brutal-sm hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-lg bg-zinc-700 flex items-center justify-center">
-                      <BookOpen className="h-6 w-6 text-zinc-400" />
+                    <div className="h-12 w-12 rounded-lg border-2 border-black bg-white flex items-center justify-center">
+                      <BookOpen className="h-6 w-6 text-black" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-white">{course.title}</h3>
-                      <p className="text-sm text-zinc-400">{course.level}</p>
+                      <h3 className="font-bold text-black">{course.title}</h3>
+                      <p className="text-sm text-gray-600">{course.level}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <span
-                      className={`px-2 py-1 rounded text-xs font-medium ${
+                      className={`px-3 py-1 rounded-lg border-2 border-black text-xs font-bold shadow-brutal-sm ${
                         course.isPublished
-                          ? 'bg-green-500/20 text-green-400'
-                          : 'bg-yellow-500/20 text-yellow-400'
+                          ? 'bg-green-400 text-black'
+                          : 'bg-yellow-400 text-black'
                       }`}
                     >
                       {course.isPublished ? 'Published' : 'Draft'}

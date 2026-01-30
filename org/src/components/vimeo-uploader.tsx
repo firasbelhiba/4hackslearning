@@ -193,12 +193,14 @@ export function VimeoUploader({
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="w-full p-8 border-2 border-dashed border-zinc-700 rounded-lg hover:border-[#D6FF25] hover:bg-zinc-800/50 transition-colors flex flex-col items-center justify-center gap-3"
+          className="w-full p-8 border-2 border-dashed border-black rounded-lg hover:border-brand hover:bg-gray-50 transition-colors flex flex-col items-center justify-center gap-3"
         >
-          <Upload className="h-8 w-8 text-zinc-500" />
+          <div className="p-3 bg-gray-100 rounded-lg border-2 border-black">
+            <Upload className="h-6 w-6 text-black" />
+          </div>
           <div className="text-center">
-            <p className="text-white font-medium">Click to upload video</p>
-            <p className="text-zinc-500 text-sm mt-1">
+            <p className="text-black font-bold">Click to upload video</p>
+            <p className="text-gray-600 text-sm mt-1">
               MP4, WebM, OGG, or QuickTime up to {maxSizeMB}MB
             </p>
           </div>
@@ -207,15 +209,15 @@ export function VimeoUploader({
 
       {/* Selected File Preview */}
       {file && status !== 'complete' && (
-        <div className="p-4 bg-zinc-800 rounded-lg">
+        <div className="p-4 bg-gray-50 rounded-lg border-2 border-black">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-zinc-700 rounded">
-                <Upload className="h-5 w-5 text-[#D6FF25]" />
+              <div className="p-2 bg-brand rounded-lg border-2 border-black">
+                <Upload className="h-5 w-5 text-black" />
               </div>
               <div>
-                <p className="text-white font-medium truncate max-w-[200px]">{file.name}</p>
-                <p className="text-zinc-500 text-sm">
+                <p className="text-black font-bold truncate max-w-[200px]">{file.name}</p>
+                <p className="text-gray-600 text-sm">
                   {(file.size / (1024 * 1024)).toFixed(2)} MB
                 </p>
               </div>
@@ -226,7 +228,6 @@ export function VimeoUploader({
                 size="sm"
                 variant="ghost"
                 onClick={reset}
-                className="text-zinc-400 hover:text-white"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -236,17 +237,17 @@ export function VimeoUploader({
           {/* Progress Bar */}
           {(status === 'uploading' || status === 'processing') && (
             <div className="space-y-2">
-              <div className="w-full bg-zinc-700 rounded-full h-2">
+              <div className="w-full bg-gray-200 rounded-full h-3 border-2 border-black overflow-hidden">
                 <div
-                  className="bg-[#D6FF25] h-2 rounded-full transition-all duration-300"
+                  className="bg-brand h-full transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 />
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-zinc-400">
+                <span className="text-gray-600 font-medium">
                   {status === 'uploading' ? 'Uploading...' : 'Processing video...'}
                 </span>
-                <span className="text-[#D6FF25]">{progress}%</span>
+                <span className="text-black font-bold">{progress}%</span>
               </div>
             </div>
           )}
@@ -257,7 +258,8 @@ export function VimeoUploader({
               <Button
                 type="button"
                 onClick={startUpload}
-                className="bg-[#D6FF25] text-black hover:bg-[#c2eb1f] flex-1"
+                variant="primary"
+                className="flex-1"
               >
                 <Upload className="h-4 w-4 mr-2" />
                 Upload to Vimeo
@@ -270,16 +272,16 @@ export function VimeoUploader({
               type="button"
               onClick={cancelUpload}
               variant="outline"
-              className="w-full mt-3 bg-zinc-700 border-zinc-600 text-white hover:bg-zinc-600"
+              className="w-full mt-3"
             >
               Cancel Upload
             </Button>
           )}
 
           {status === 'processing' && (
-            <div className="flex items-center justify-center gap-2 mt-3 text-zinc-400">
+            <div className="flex items-center justify-center gap-2 mt-3 text-gray-600">
               <Loader2 className="h-4 w-4 animate-spin" />
-              <span className="text-sm">Processing on Vimeo, please wait...</span>
+              <span className="text-sm font-medium">Processing on Vimeo, please wait...</span>
             </div>
           )}
         </div>
@@ -287,18 +289,20 @@ export function VimeoUploader({
 
       {/* Error State */}
       {status === 'error' && (
-        <div className="p-4 bg-red-900/20 border border-red-800 rounded-lg">
+        <div className="p-4 bg-red-50 border-2 border-red-500 rounded-lg">
           <div className="flex items-center gap-3">
-            <AlertCircle className="h-5 w-5 text-red-400" />
+            <div className="p-2 bg-red-500 rounded-lg">
+              <AlertCircle className="h-5 w-5 text-white" />
+            </div>
             <div className="flex-1">
-              <p className="text-red-400">{errorMessage}</p>
+              <p className="text-red-600 font-bold">{errorMessage}</p>
             </div>
             <Button
               type="button"
               size="sm"
-              variant="ghost"
+              variant="outline"
               onClick={reset}
-              className="text-red-400 hover:text-white"
+              className="border-red-500 text-red-600 hover:bg-red-100"
             >
               Try Again
             </Button>
@@ -308,19 +312,21 @@ export function VimeoUploader({
 
       {/* Success State */}
       {status === 'complete' && (
-        <div className="p-4 bg-green-900/20 border border-green-800 rounded-lg">
+        <div className="p-4 bg-green-50 border-2 border-green-500 rounded-lg">
           <div className="flex items-center gap-3">
-            <CheckCircle className="h-5 w-5 text-green-400" />
+            <div className="p-2 bg-green-500 rounded-lg">
+              <CheckCircle className="h-5 w-5 text-white" />
+            </div>
             <div className="flex-1">
-              <p className="text-green-400 font-medium">Video uploaded successfully!</p>
-              <p className="text-green-400/70 text-sm">Your video is now ready for playback.</p>
+              <p className="text-green-700 font-bold">Video uploaded successfully!</p>
+              <p className="text-green-600 text-sm">Your video is now ready for playback.</p>
             </div>
             <Button
               type="button"
               size="sm"
-              variant="ghost"
+              variant="outline"
               onClick={reset}
-              className="text-green-400 hover:text-white"
+              className="border-green-500 text-green-600 hover:bg-green-100"
             >
               Upload Another
             </Button>

@@ -89,10 +89,10 @@ export default function NewCoursePage() {
   if (!currentOrganization) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-white mb-2">No Organization Selected</h2>
-          <p className="text-zinc-400">Please select an organization from the sidebar.</p>
-        </div>
+        <Card className="p-8 text-center">
+          <h2 className="text-xl font-bold text-black mb-2">No Organization Selected</h2>
+          <p className="text-gray-600">Please select an organization from the sidebar.</p>
+        </Card>
       </div>
     );
   }
@@ -102,44 +102,42 @@ export default function NewCoursePage() {
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href="/dashboard/courses">
-          <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-white">
+          <Button variant="outline" size="icon">
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-white">Create New Course</h1>
-          <p className="text-zinc-400 mt-1">Fill in the details to create a new course.</p>
+          <h1 className="text-3xl font-bold text-black">Create New Course</h1>
+          <p className="text-gray-600 mt-1">Fill in the details to create a new course.</p>
         </div>
       </div>
 
       {/* Form */}
       <form onSubmit={handleSubmit}>
-        <Card className="bg-zinc-900 border-zinc-800">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-white">Course Details</CardTitle>
+            <CardTitle className="text-xl text-black">Course Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Title & Slug */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="title" className="text-zinc-300">Course Title *</Label>
+                <Label htmlFor="title">Course Title *</Label>
                 <Input
                   id="title"
                   value={formData.title}
                   onChange={handleTitleChange}
-                  className="bg-zinc-800 border-zinc-700 text-white"
                   placeholder="e.g., Introduction to Blockchain"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="slug" className="text-zinc-300">URL Slug *</Label>
+                <Label htmlFor="slug">URL Slug *</Label>
                 <Input
                   id="slug"
                   value={formData.slug}
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  className="bg-zinc-800 border-zinc-700 text-white"
                   required
                 />
               </div>
@@ -147,28 +145,27 @@ export default function NewCoursePage() {
 
             {/* Short Description */}
             <div className="space-y-2">
-              <Label htmlFor="shortDescription" className="text-zinc-300">
+              <Label htmlFor="shortDescription">
                 Short Description
               </Label>
               <Input
                 id="shortDescription"
                 value={formData.shortDescription}
                 onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
-                className="bg-zinc-800 border-zinc-700 text-white"
                 placeholder="A brief summary of the course"
               />
             </div>
 
             {/* Full Description */}
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-zinc-300">
+              <Label htmlFor="description">
                 Full Description
               </Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="bg-zinc-800 border-zinc-700 text-white min-h-[150px]"
+                className="min-h-[150px]"
                 placeholder="Detailed course description with learning objectives..."
               />
             </div>
@@ -176,29 +173,28 @@ export default function NewCoursePage() {
             {/* Level & Category */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label className="text-zinc-300">Level *</Label>
+                <Label>Level *</Label>
                 <Select
                   value={formData.level}
                   onValueChange={(value) => setFormData({ ...formData, level: value })}
                 >
-                  <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-zinc-800 border-zinc-700">
-                    <SelectItem value="BEGINNER" className="text-white focus:bg-zinc-700 focus:text-white">Beginner</SelectItem>
-                    <SelectItem value="INTERMEDIATE" className="text-white focus:bg-zinc-700 focus:text-white">Intermediate</SelectItem>
-                    <SelectItem value="ADVANCED" className="text-white focus:bg-zinc-700 focus:text-white">Advanced</SelectItem>
+                  <SelectContent>
+                    <SelectItem value="BEGINNER">Beginner</SelectItem>
+                    <SelectItem value="INTERMEDIATE">Intermediate</SelectItem>
+                    <SelectItem value="ADVANCED">Advanced</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="category" className="text-zinc-300">Category</Label>
+                <Label htmlFor="category">Category</Label>
                 <Input
                   id="category"
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="bg-zinc-800 border-zinc-700 text-white"
                   placeholder="e.g., Blockchain, Web Development"
                 />
               </div>
@@ -206,24 +202,22 @@ export default function NewCoursePage() {
 
             {/* Tags */}
             <div className="space-y-2">
-              <Label htmlFor="tags" className="text-zinc-300">Tags</Label>
+              <Label htmlFor="tags">Tags</Label>
               <Input
                 id="tags"
                 value={formData.tags}
                 onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                className="bg-zinc-800 border-zinc-700 text-white"
                 placeholder="Comma-separated tags, e.g., hedera, smart contracts, web3"
               />
             </div>
 
             {/* Thumbnail */}
             <div className="space-y-2">
-              <Label htmlFor="thumbnail" className="text-zinc-300">Thumbnail URL</Label>
+              <Label htmlFor="thumbnail">Thumbnail URL</Label>
               <Input
                 id="thumbnail"
                 value={formData.thumbnail}
                 onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
-                className="bg-zinc-800 border-zinc-700 text-white"
                 placeholder="https://example.com/image.jpg"
               />
             </div>
@@ -231,20 +225,20 @@ export default function NewCoursePage() {
             {/* Pricing */}
             <div className="space-y-4">
               <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="flex items-center gap-3 cursor-pointer px-4 py-3 rounded-lg border-2 border-black bg-gray-50 hover:bg-gray-100 transition-colors">
                   <input
                     type="checkbox"
                     checked={formData.isFree}
                     onChange={(e) => setFormData({ ...formData, isFree: e.target.checked })}
-                    className="rounded border-zinc-700 bg-zinc-800 text-[#D6FF25] focus:ring-[#D6FF25]"
+                    className="rounded border-2 border-black h-5 w-5 text-brand focus:ring-brand"
                   />
-                  <span className="text-zinc-300">Free Course</span>
+                  <span className="font-bold text-black">Free Course</span>
                 </label>
               </div>
 
               {!formData.isFree && (
                 <div className="space-y-2">
-                  <Label htmlFor="price" className="text-zinc-300">Price ($)</Label>
+                  <Label htmlFor="price">Price ($)</Label>
                   <Input
                     id="price"
                     type="number"
@@ -252,7 +246,7 @@ export default function NewCoursePage() {
                     step="0.01"
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-                    className="bg-zinc-800 border-zinc-700 text-white w-32"
+                    className="w-32"
                   />
                 </div>
               )}
@@ -260,31 +254,30 @@ export default function NewCoursePage() {
 
             {/* Publish */}
             <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="flex items-center gap-3 cursor-pointer px-4 py-3 rounded-lg border-2 border-black bg-green-50 hover:bg-green-100 transition-colors">
                 <input
                   type="checkbox"
                   checked={formData.isPublished}
                   onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
-                  className="rounded border-zinc-700 bg-zinc-800 text-[#D6FF25] focus:ring-[#D6FF25]"
+                  className="rounded border-2 border-black h-5 w-5 text-green-500 focus:ring-green-500"
                 />
-                <span className="text-zinc-300">Publish immediately</span>
+                <span className="font-bold text-black">Publish immediately</span>
               </label>
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t border-zinc-800">
+            <div className="flex justify-end gap-3 pt-6 border-t-2 border-black">
               <Link href="/dashboard/courses">
                 <Button
                   type="button"
                   variant="outline"
-                  className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700"
                 >
                   Cancel
                 </Button>
               </Link>
               <Button
                 type="submit"
-                className="bg-[#D6FF25] text-black hover:bg-[#c2eb1f]"
+                variant="primary"
                 disabled={isLoading}
               >
                 <Save className="h-4 w-4 mr-2" />

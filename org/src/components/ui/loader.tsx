@@ -72,7 +72,7 @@ export function Loader({ size = 'md', className, text }: LoaderProps) {
       </div>
 
       {text && (
-        <p className={cn('text-zinc-500 animate-pulse', textSizeClasses[size])}>
+        <p className={cn('text-gray-600 animate-pulse font-medium', textSizeClasses[size])}>
           {text}
         </p>
       )}
@@ -80,10 +80,10 @@ export function Loader({ size = 'md', className, text }: LoaderProps) {
   );
 }
 
-// Full page loader variant - dark theme for org portal
+// Full page loader variant - light theme for org portal
 export function PageLoader({ text = 'Loading...' }: { text?: string }) {
   return (
-    <div className="fixed inset-0 bg-zinc-950 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 bg-[#FCFAF7] z-50 flex items-center justify-center">
       <Loader size="lg" text={text} />
     </div>
   );

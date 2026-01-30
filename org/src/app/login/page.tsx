@@ -37,31 +37,40 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-950 px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-[#FCFAF7] px-4">
+      {/* Background decorations */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-32 h-32 bg-brand/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl" />
+      </div>
+
+      <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
           <Image
             src="/images/logo-lg.png"
             alt="4HACKS"
-            width={150}
-            height={50}
-            className="mx-auto mb-3"
+            width={180}
+            height={60}
+            className="mx-auto mb-4"
             priority
           />
-          <p className="text-zinc-400">Organizer Portal</p>
+          <div className="inline-block px-4 py-1 bg-black text-white text-sm font-bold rounded-full border-2 border-black">
+            Organizer Portal
+          </div>
         </div>
 
-        <Card className="bg-zinc-900 border-zinc-800">
+        <Card className="bg-white border-2 border-black shadow-brutal-lg">
           <CardHeader>
-            <CardTitle className="text-white">Sign In</CardTitle>
-            <CardDescription className="text-zinc-400">
+            <CardTitle className="text-2xl text-black">Sign In</CardTitle>
+            <CardDescription className="text-gray-600">
               Enter your credentials to access your organization dashboard
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-zinc-300">Email</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -69,12 +78,11 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-zinc-300">Password</Label>
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -82,23 +90,25 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
                 />
               </div>
 
               <Button
                 type="submit"
-                className="w-full bg-[#D6FF25] text-black hover:bg-[#c2eb1f]"
+                variant="primary"
+                className="w-full"
                 disabled={isLoading}
               >
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
 
-            <div className="mt-6 pt-6 border-t border-zinc-800">
-              <p className="text-sm text-zinc-500 text-center">
-                Demo credentials: instructor@4hacks.com / Instructor123!
-              </p>
+            <div className="mt-6 pt-6 border-t-2 border-black">
+              <div className="bg-gray-100 rounded-lg border-2 border-black p-3 shadow-brutal-sm">
+                <p className="text-sm text-gray-700 text-center font-medium">
+                  Demo credentials: instructor@4hacks.com / Instructor123!
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>

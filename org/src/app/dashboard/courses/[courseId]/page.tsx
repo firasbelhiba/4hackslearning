@@ -248,10 +248,10 @@ export default function CourseDetailPage() {
   if (!currentOrganization) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-white mb-2">No Organization Selected</h2>
-          <p className="text-zinc-400">Please select an organization from the sidebar.</p>
-        </div>
+        <Card className="p-8 text-center">
+          <h2 className="text-xl font-bold text-black mb-2">No Organization Selected</h2>
+          <p className="text-gray-600">Please select an organization from the sidebar.</p>
+        </Card>
       </div>
     );
   }
@@ -259,8 +259,8 @@ export default function CourseDetailPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="h-8 bg-zinc-800 rounded w-64 animate-pulse"></div>
-        <div className="h-64 bg-zinc-800 rounded animate-pulse"></div>
+        <div className="h-8 bg-gray-200 rounded-lg w-64 animate-pulse"></div>
+        <div className="h-64 bg-gray-200 rounded-lg animate-pulse"></div>
       </div>
     );
   }
@@ -268,10 +268,10 @@ export default function CourseDetailPage() {
   if (!course) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-white mb-2">Course Not Found</h2>
-          <p className="text-zinc-400">The course you're looking for doesn't exist.</p>
-        </div>
+        <Card className="p-8 text-center">
+          <h2 className="text-xl font-bold text-black mb-2">Course Not Found</h2>
+          <p className="text-gray-600">The course you're looking for doesn't exist.</p>
+        </Card>
       </div>
     );
   }
@@ -282,22 +282,22 @@ export default function CourseDetailPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/dashboard/courses">
-            <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-white">
+            <Button variant="outline" size="icon">
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-white">{course.title}</h1>
+              <h1 className="text-3xl font-bold text-black">{course.title}</h1>
               <Badge variant={course.isPublished ? 'success' : 'warning'}>
                 {course.isPublished ? 'Published' : 'Draft'}
               </Badge>
             </div>
-            <p className="text-zinc-400 mt-1">{course.shortDescription}</p>
+            <p className="text-gray-600 mt-1">{course.shortDescription}</p>
           </div>
         </div>
         <Link href={`/dashboard/courses/${courseId}/edit`}>
-          <Button className="bg-[#D6FF25] text-black hover:bg-[#c2eb1f]">
+          <Button variant="primary">
             <Edit className="h-4 w-4 mr-2" />
             Edit Course
           </Button>
@@ -306,11 +306,11 @@ export default function CourseDetailPage() {
 
       {/* Content Tabs */}
       <Tabs defaultValue="curriculum" className="w-full">
-        <TabsList className="bg-zinc-900 border-zinc-800">
-          <TabsTrigger value="curriculum" className="data-[state=active]:bg-zinc-800">
+        <TabsList>
+          <TabsTrigger value="curriculum">
             Curriculum
           </TabsTrigger>
-          <TabsTrigger value="settings" className="data-[state=active]:bg-zinc-800">
+          <TabsTrigger value="settings">
             Settings
           </TabsTrigger>
         </TabsList>
@@ -320,7 +320,7 @@ export default function CourseDetailPage() {
           <div className="flex justify-end">
             <Button
               onClick={() => handleOpenModuleModal()}
-              className="bg-zinc-800 text-white hover:bg-zinc-700"
+              variant="outline"
             >
               <Plus className="h-4 w-4 mr-2" />
               Add Module
@@ -329,16 +329,18 @@ export default function CourseDetailPage() {
 
           {/* Modules List */}
           {course.modules.length === 0 ? (
-            <Card className="bg-zinc-900 border-zinc-800">
+            <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
-                <FileText className="h-12 w-12 text-zinc-700 mb-4" />
-                <h3 className="text-lg font-medium text-white mb-2">No modules yet</h3>
-                <p className="text-zinc-400 text-center mb-4">
+                <div className="h-16 w-16 rounded-xl border-2 border-black bg-gray-100 flex items-center justify-center mb-4 shadow-brutal-sm">
+                  <FileText className="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-bold text-black mb-2">No modules yet</h3>
+                <p className="text-gray-600 text-center mb-4">
                   Start building your course by adding modules and lessons.
                 </p>
                 <Button
                   onClick={() => handleOpenModuleModal()}
-                  className="bg-[#D6FF25] text-black hover:bg-[#c2eb1f]"
+                  variant="primary"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add First Module
@@ -346,28 +348,28 @@ export default function CourseDetailPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {course.modules
                 .sort((a, b) => a.order - b.order)
                 .map((module, index) => (
-                  <Card key={module.id} className="bg-zinc-900 border-zinc-800">
+                  <Card key={module.id}>
                     <CardHeader className="py-3 px-4">
                       <div className="flex items-center justify-between">
                         <button
                           onClick={() => toggleModule(module.id)}
                           className="flex items-center gap-3 text-left flex-1"
                         >
-                          <GripVertical className="h-4 w-4 text-zinc-600 cursor-grab" />
+                          <GripVertical className="h-4 w-4 text-gray-400 cursor-grab" />
                           {expandedModules.has(module.id) ? (
-                            <ChevronDown className="h-4 w-4 text-zinc-400" />
+                            <ChevronDown className="h-4 w-4 text-gray-600" />
                           ) : (
-                            <ChevronRight className="h-4 w-4 text-zinc-400" />
+                            <ChevronRight className="h-4 w-4 text-gray-600" />
                           )}
                           <div>
-                            <h3 className="font-medium text-white">
+                            <h3 className="font-bold text-black">
                               Module {index + 1}: {module.title}
                             </h3>
-                            <p className="text-sm text-zinc-500">
+                            <p className="text-sm text-gray-600">
                               {module.lessons.length} lessons
                             </p>
                           </div>
@@ -377,7 +379,6 @@ export default function CourseDetailPage() {
                             size="sm"
                             variant="ghost"
                             onClick={() => handleOpenLessonModal(module.id)}
-                            className="text-zinc-400 hover:text-white"
                           >
                             <Plus className="h-4 w-4" />
                           </Button>
@@ -385,7 +386,6 @@ export default function CourseDetailPage() {
                             size="sm"
                             variant="ghost"
                             onClick={() => handleOpenModuleModal(module)}
-                            className="text-zinc-400 hover:text-white"
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -397,7 +397,7 @@ export default function CourseDetailPage() {
                               setDeleteTarget({ id: module.id, title: module.title });
                               setDeleteModalOpen(true);
                             }}
-                            className="text-zinc-400 hover:text-red-400"
+                            className="hover:text-red-500"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -409,24 +409,26 @@ export default function CourseDetailPage() {
                       <CardContent className="pt-0 pb-3 px-4">
                         <div className="ml-11 space-y-2">
                           {module.lessons.length === 0 ? (
-                            <p className="text-sm text-zinc-500 py-2">No lessons in this module</p>
+                            <p className="text-sm text-gray-500 py-2">No lessons in this module</p>
                           ) : (
                             module.lessons
                               .sort((a, b) => a.order - b.order)
                               .map((lesson, lessonIndex) => (
                                 <div
                                   key={lesson.id}
-                                  className="flex items-center justify-between p-3 rounded-lg bg-zinc-800/50 group"
+                                  className="flex items-center justify-between p-3 rounded-lg border-2 border-gray-200 bg-gray-50 group hover:border-black transition-colors"
                                 >
                                   <div className="flex items-center gap-3">
-                                    <GripVertical className="h-4 w-4 text-zinc-600 cursor-grab" />
-                                    <Play className="h-4 w-4 text-[#D6FF25]" />
+                                    <GripVertical className="h-4 w-4 text-gray-400 cursor-grab" />
+                                    <div className="p-1.5 bg-brand rounded-lg border-2 border-black">
+                                      <Play className="h-3 w-3 text-black" />
+                                    </div>
                                     <div>
-                                      <h4 className="text-sm font-medium text-white">
+                                      <h4 className="text-sm font-bold text-black">
                                         {lessonIndex + 1}. {lesson.title}
                                       </h4>
                                       {lesson.videoDuration && (
-                                        <p className="text-xs text-zinc-500">
+                                        <p className="text-xs text-gray-500">
                                           {Math.floor(lesson.videoDuration / 60)}m{' '}
                                           {lesson.videoDuration % 60}s
                                         </p>
@@ -438,7 +440,7 @@ export default function CourseDetailPage() {
                                       size="sm"
                                       variant="ghost"
                                       onClick={() => handleOpenLessonModal(module.id, lesson)}
-                                      className="text-zinc-400 hover:text-white h-7 w-7 p-0"
+                                      className="h-7 w-7 p-0"
                                     >
                                       <Edit className="h-3.5 w-3.5" />
                                     </Button>
@@ -450,7 +452,7 @@ export default function CourseDetailPage() {
                                         setDeleteTarget({ id: lesson.id, title: lesson.title });
                                         setDeleteModalOpen(true);
                                       }}
-                                      className="text-zinc-400 hover:text-red-400 h-7 w-7 p-0"
+                                      className="h-7 w-7 p-0 hover:text-red-500"
                                     >
                                       <Trash2 className="h-3.5 w-3.5" />
                                     </Button>
@@ -468,19 +470,19 @@ export default function CourseDetailPage() {
         </TabsContent>
 
         <TabsContent value="settings" className="mt-6">
-          <Card className="bg-zinc-900 border-zinc-800">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-white">Course Settings</CardTitle>
+              <CardTitle className="text-xl text-black">Course Settings</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div>
-                  <span className="text-zinc-400 text-sm">Level:</span>
-                  <span className="text-white ml-2">{course.level}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-600 text-sm font-bold">Level:</span>
+                  <Badge variant="outline">{course.level}</Badge>
                 </div>
-                <div>
-                  <span className="text-zinc-400 text-sm">Slug:</span>
-                  <span className="text-white ml-2">{course.slug}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-600 text-sm font-bold">Slug:</span>
+                  <code className="px-2 py-1 bg-gray-100 rounded-lg border-2 border-black text-sm">{course.slug}</code>
                 </div>
               </div>
             </CardContent>
@@ -490,28 +492,26 @@ export default function CourseDetailPage() {
 
       {/* Module Modal */}
       <Dialog open={moduleModalOpen} onOpenChange={setModuleModalOpen}>
-        <DialogContent className="bg-zinc-900 border-zinc-800">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle className="text-white">
+            <DialogTitle>
               {editingModule ? 'Edit Module' : 'Add Module'}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm text-zinc-300">Title</label>
+              <label className="text-sm font-bold text-black">Title</label>
               <Input
                 value={moduleForm.title}
                 onChange={(e) => setModuleForm({ ...moduleForm, title: e.target.value })}
-                className="bg-zinc-800 border-zinc-700 text-white"
                 placeholder="Module title"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm text-zinc-300">Description</label>
+              <label className="text-sm font-bold text-black">Description</label>
               <Input
                 value={moduleForm.description}
                 onChange={(e) => setModuleForm({ ...moduleForm, description: e.target.value })}
-                className="bg-zinc-800 border-zinc-700 text-white"
                 placeholder="Brief description"
               />
             </div>
@@ -520,13 +520,12 @@ export default function CourseDetailPage() {
             <Button
               variant="outline"
               onClick={() => setModuleModalOpen(false)}
-              className="bg-zinc-800 border-zinc-700 text-white"
             >
               Cancel
             </Button>
             <Button
               onClick={handleSaveModule}
-              className="bg-[#D6FF25] text-black hover:bg-[#c2eb1f]"
+              variant="primary"
             >
               {editingModule ? 'Update' : 'Create'}
             </Button>
@@ -536,42 +535,40 @@ export default function CourseDetailPage() {
 
       {/* Lesson Modal */}
       <Dialog open={lessonModalOpen} onOpenChange={setLessonModalOpen}>
-        <DialogContent className="bg-zinc-900 border-zinc-800 max-w-2xl">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-white">
+            <DialogTitle>
               {editingLesson ? 'Edit Lesson' : 'Add Lesson'}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
             <div className="space-y-2">
-              <label className="text-sm text-zinc-300">Title</label>
+              <label className="text-sm font-bold text-black">Title</label>
               <Input
                 value={lessonForm.title}
                 onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })}
-                className="bg-zinc-800 border-zinc-700 text-white"
                 placeholder="Lesson title"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm text-zinc-300">Description</label>
+              <label className="text-sm font-bold text-black">Description</label>
               <Input
                 value={lessonForm.description}
                 onChange={(e) => setLessonForm({ ...lessonForm, description: e.target.value })}
-                className="bg-zinc-800 border-zinc-700 text-white"
                 placeholder="Brief description"
               />
             </div>
 
             {/* Vimeo Video Upload Section */}
             <div className="space-y-2">
-              <label className="text-sm text-zinc-300 flex items-center gap-2">
+              <label className="text-sm font-bold text-black flex items-center gap-2">
                 <Video className="h-4 w-4" />
                 Lesson Video
               </label>
 
               {lessonForm.vimeoVideoId ? (
                 <div className="space-y-3">
-                  <div className="aspect-video rounded-lg overflow-hidden bg-zinc-800">
+                  <div className="aspect-video rounded-lg overflow-hidden border-2 border-black">
                     <iframe
                       src={`https://player.vimeo.com/video/${lessonForm.vimeoVideoId}`}
                       className="w-full h-full"
@@ -582,7 +579,7 @@ export default function CourseDetailPage() {
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-zinc-400">
+                    <span className="text-sm text-gray-600">
                       Video ID: {lessonForm.vimeoVideoId}
                     </span>
                     <Button
@@ -590,7 +587,6 @@ export default function CourseDetailPage() {
                       size="sm"
                       variant="outline"
                       onClick={() => setLessonForm({ ...lessonForm, vimeoVideoId: '', videoUrl: '' })}
-                      className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700"
                     >
                       Remove Video
                     </Button>
@@ -617,16 +613,16 @@ export default function CourseDetailPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm text-zinc-300">Video Duration (seconds)</label>
+              <label className="text-sm font-bold text-black">Video Duration (seconds)</label>
               <Input
                 type="number"
                 value={lessonForm.videoDuration}
                 onChange={(e) =>
                   setLessonForm({ ...lessonForm, videoDuration: Number(e.target.value) })
                 }
-                className="bg-zinc-800 border-zinc-700 text-white w-32"
+                className="w-32"
               />
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-gray-500">
                 Duration will be auto-detected after video processes
               </p>
             </div>
@@ -635,13 +631,12 @@ export default function CourseDetailPage() {
             <Button
               variant="outline"
               onClick={() => setLessonModalOpen(false)}
-              className="bg-zinc-800 border-zinc-700 text-white"
             >
               Cancel
             </Button>
             <Button
               onClick={handleSaveLesson}
-              className="bg-[#D6FF25] text-black hover:bg-[#c2eb1f]"
+              variant="primary"
             >
               {editingLesson ? 'Update' : 'Create'}
             </Button>
@@ -651,10 +646,10 @@ export default function CourseDetailPage() {
 
       {/* Delete Confirmation Modal */}
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
-        <DialogContent className="bg-zinc-900 border-zinc-800">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle className="text-white">Delete {deleteType}</DialogTitle>
-            <DialogDescription className="text-zinc-400">
+            <DialogTitle>Delete {deleteType}</DialogTitle>
+            <DialogDescription>
               Are you sure you want to delete "{deleteTarget?.title}"? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
@@ -662,7 +657,6 @@ export default function CourseDetailPage() {
             <Button
               variant="outline"
               onClick={() => setDeleteModalOpen(false)}
-              className="bg-zinc-800 border-zinc-700 text-white"
             >
               Cancel
             </Button>

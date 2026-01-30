@@ -185,10 +185,10 @@ export default function CertificatesPage() {
   if (!currentOrganization) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-white mb-2">No Organization Selected</h2>
-          <p className="text-zinc-400">Please select an organization from the sidebar.</p>
-        </div>
+        <Card className="p-8 text-center">
+          <h2 className="text-xl font-bold text-black mb-2">No Organization Selected</h2>
+          <p className="text-gray-600">Please select an organization from the sidebar.</p>
+        </Card>
       </div>
     );
   }
@@ -198,14 +198,14 @@ export default function CertificatesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Certificate Templates</h1>
-          <p className="text-zinc-400 mt-1">
+          <h1 className="text-3xl font-bold text-black">Certificate Templates</h1>
+          <p className="text-gray-600 mt-1">
             Customize how certificates look for your courses.
           </p>
         </div>
         <Button
           onClick={() => handleOpenModal()}
-          className="bg-[#D6FF25] text-black hover:bg-[#c2eb1f]"
+          variant="primary"
         >
           <Plus className="h-4 w-4 mr-2" />
           New Template
@@ -214,27 +214,29 @@ export default function CertificatesPage() {
 
       {/* Templates Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="bg-zinc-900 border-zinc-800 animate-pulse">
+            <Card key={i} className="animate-pulse">
               <CardContent className="p-6">
-                <div className="h-40 bg-zinc-800 rounded-lg mb-4"></div>
-                <div className="h-4 bg-zinc-800 rounded w-3/4"></div>
+                <div className="h-40 bg-gray-200 rounded-lg mb-4"></div>
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
               </CardContent>
             </Card>
           ))}
         </div>
       ) : templates.length === 0 ? (
-        <Card className="bg-zinc-900 border-zinc-800">
+        <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Award className="h-12 w-12 text-zinc-700 mb-4" />
-            <h3 className="text-lg font-medium text-white mb-2">No templates yet</h3>
-            <p className="text-zinc-400 text-center mb-4">
+            <div className="h-16 w-16 rounded-xl border-2 border-black bg-gray-100 flex items-center justify-center mb-4 shadow-brutal-sm">
+              <Award className="h-8 w-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-bold text-black mb-2">No templates yet</h3>
+            <p className="text-gray-600 text-center mb-4">
               Create your first certificate template to customize how certificates look.
             </p>
             <Button
               onClick={() => handleOpenModal()}
-              className="bg-[#D6FF25] text-black hover:bg-[#c2eb1f]"
+              variant="primary"
             >
               <Plus className="h-4 w-4 mr-2" />
               Create Template
@@ -242,9 +244,9 @@ export default function CertificatesPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {templates.map((template) => (
-            <Card key={template.id} className="bg-zinc-900 border-zinc-800 group">
+            <Card key={template.id} className="group hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
               <CardContent className="p-0">
                 {/* Preview */}
                 <div
@@ -293,7 +295,7 @@ export default function CertificatesPage() {
                 {/* Content */}
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-white">{template.name}</h3>
+                    <h3 className="font-bold text-black">{template.name}</h3>
                     {template.isDefault && (
                       <Badge variant="success" className="ml-2">Default</Badge>
                     )}
@@ -301,24 +303,24 @@ export default function CertificatesPage() {
 
                   <div className="flex items-center gap-2 mb-4">
                     <div
-                      className="h-4 w-4 rounded-full border border-zinc-600"
+                      className="h-5 w-5 rounded-lg border-2 border-black"
                       style={{ backgroundColor: template.templateConfig?.backgroundColor }}
                       title="Background"
                     />
                     <div
-                      className="h-4 w-4 rounded-full border border-zinc-600"
+                      className="h-5 w-5 rounded-lg border-2 border-black"
                       style={{ backgroundColor: template.templateConfig?.textColor }}
                       title="Text"
                     />
                     <div
-                      className="h-4 w-4 rounded-full border border-zinc-600"
+                      className="h-5 w-5 rounded-lg border-2 border-black"
                       style={{ backgroundColor: template.templateConfig?.accentColor }}
                       title="Accent"
                     />
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-zinc-500">
+                    <span className="text-xs text-gray-600 font-medium">
                       {new Date(template.createdAt).toLocaleDateString()}
                     </span>
                     {!template.isDefault && (
@@ -327,7 +329,7 @@ export default function CertificatesPage() {
                           setTemplateToDelete(template);
                           setDeleteModalOpen(true);
                         }}
-                        className="text-zinc-500 hover:text-red-400 transition-colors"
+                        className="p-1 rounded border-2 border-transparent hover:border-red-500 hover:bg-red-50 text-gray-500 hover:text-red-500 transition-all"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -342,12 +344,12 @@ export default function CertificatesPage() {
 
       {/* Create/Edit Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="bg-zinc-900 border-zinc-800 max-w-2xl">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-white">
+            <DialogTitle>
               {editingTemplate ? 'Edit Template' : 'Create Template'}
             </DialogTitle>
-            <DialogDescription className="text-zinc-400">
+            <DialogDescription>
               Customize how your certificates will look.
             </DialogDescription>
           </DialogHeader>
@@ -356,70 +358,69 @@ export default function CertificatesPage() {
             {/* Left: Form */}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-zinc-300">Template Name</Label>
+                <Label>Template Name</Label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="bg-zinc-800 border-zinc-700 text-white"
                   placeholder="My Template"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-2">
-                  <Label className="text-zinc-300 text-xs">Background</Label>
+                  <Label className="text-xs">Background</Label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
                       value={formData.templateConfig.backgroundColor}
                       onChange={(e) => updateConfig('backgroundColor', e.target.value)}
-                      className="h-8 w-8 rounded cursor-pointer"
+                      className="h-8 w-8 rounded-lg border-2 border-black cursor-pointer"
                     />
                     <Input
                       value={formData.templateConfig.backgroundColor}
                       onChange={(e) => updateConfig('backgroundColor', e.target.value)}
-                      className="bg-zinc-800 border-zinc-700 text-white text-xs h-8"
+                      className="text-xs h-8"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-zinc-300 text-xs">Text Color</Label>
+                  <Label className="text-xs">Text Color</Label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
                       value={formData.templateConfig.textColor}
                       onChange={(e) => updateConfig('textColor', e.target.value)}
-                      className="h-8 w-8 rounded cursor-pointer"
+                      className="h-8 w-8 rounded-lg border-2 border-black cursor-pointer"
                     />
                     <Input
                       value={formData.templateConfig.textColor}
                       onChange={(e) => updateConfig('textColor', e.target.value)}
-                      className="bg-zinc-800 border-zinc-700 text-white text-xs h-8"
+                      className="text-xs h-8"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-zinc-300 text-xs">Accent Color</Label>
+                  <Label className="text-xs">Accent Color</Label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
                       value={formData.templateConfig.accentColor}
                       onChange={(e) => updateConfig('accentColor', e.target.value)}
-                      className="h-8 w-8 rounded cursor-pointer"
+                      className="h-8 w-8 rounded-lg border-2 border-black cursor-pointer"
                     />
                     <Input
                       value={formData.templateConfig.accentColor}
                       onChange={(e) => updateConfig('accentColor', e.target.value)}
-                      className="bg-zinc-800 border-zinc-700 text-white text-xs h-8"
+                      className="text-xs h-8"
                     />
                   </div>
                 </div>
               </div>
 
               <div className="space-y-3 pt-2">
-                <Label className="text-zinc-300 text-sm">Display Options</Label>
+                <Label className="text-sm">Display Options</Label>
                 {[
                   { key: 'showOrganizationLogo', label: 'Show Organization Logo' },
                   { key: 'showStudentName', label: 'Show Student Name' },
@@ -432,9 +433,9 @@ export default function CertificatesPage() {
                       type="checkbox"
                       checked={formData.templateConfig[option.key as keyof TemplateConfig] as boolean}
                       onChange={(e) => updateConfig(option.key as keyof TemplateConfig, e.target.checked)}
-                      className="rounded border-zinc-700 bg-zinc-800 text-[#D6FF25] focus:ring-[#D6FF25]"
+                      className="rounded border-2 border-black h-4 w-4 text-brand focus:ring-brand"
                     />
-                    <span className="text-zinc-300 text-sm">{option.label}</span>
+                    <span className="text-black text-sm font-medium">{option.label}</span>
                   </label>
                 ))}
               </div>
@@ -442,7 +443,7 @@ export default function CertificatesPage() {
 
             {/* Right: Preview */}
             <div>
-              <Label className="text-zinc-300 text-sm mb-2 block">Preview</Label>
+              <Label className="text-sm mb-2 block">Preview</Label>
               <div
                 className="rounded-lg p-4 min-h-[200px] flex flex-col items-center justify-center"
                 style={{
@@ -502,13 +503,12 @@ export default function CertificatesPage() {
             <Button
               variant="outline"
               onClick={() => setModalOpen(false)}
-              className="bg-zinc-800 border-zinc-700 text-white"
             >
               Cancel
             </Button>
             <Button
               onClick={handleSave}
-              className="bg-[#D6FF25] text-black hover:bg-[#c2eb1f]"
+              variant="primary"
             >
               {editingTemplate ? 'Update' : 'Create'}
             </Button>
@@ -518,10 +518,10 @@ export default function CertificatesPage() {
 
       {/* Delete Confirmation Modal */}
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
-        <DialogContent className="bg-zinc-900 border-zinc-800">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle className="text-white">Delete Template</DialogTitle>
-            <DialogDescription className="text-zinc-400">
+            <DialogTitle>Delete Template</DialogTitle>
+            <DialogDescription>
               Are you sure you want to delete "{templateToDelete?.name}"? This action cannot be
               undone.
             </DialogDescription>
@@ -530,7 +530,6 @@ export default function CertificatesPage() {
             <Button
               variant="outline"
               onClick={() => setDeleteModalOpen(false)}
-              className="bg-zinc-800 border-zinc-700 text-white"
             >
               Cancel
             </Button>

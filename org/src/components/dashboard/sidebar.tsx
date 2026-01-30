@@ -47,37 +47,36 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-zinc-900 border-r border-zinc-800">
+    <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-white border-r-2 border-black">
       <div className="flex h-full flex-col">
         {/* Logo */}
-        <div className="flex items-center gap-2 px-6 py-5 border-b border-zinc-800">
-          <h1 className="text-xl font-bold text-white">
-            <span className="text-[#D6FF25]">4</span>HACKS
+        <div className="flex items-center gap-2 px-6 py-5 border-b-2 border-black bg-brand">
+          <h1 className="text-xl font-bold text-black">
+            <span className="text-black">4</span>HACKS
           </h1>
-          <span className="text-xs text-zinc-500">Organizer</span>
+          <span className="text-xs font-bold bg-black text-white px-2 py-0.5 rounded">ORG</span>
         </div>
 
         {/* Organization Selector */}
-        <div className="px-4 py-4 border-b border-zinc-800">
-          <label className="text-xs text-zinc-500 mb-2 block">Organization</label>
+        <div className="px-4 py-4 border-b-2 border-black bg-gray-50">
+          <label className="text-xs font-bold text-black mb-2 block uppercase tracking-wide">Organization</label>
           <Select
             value={currentOrganization?.id || ''}
             onValueChange={handleOrgChange}
           >
-            <SelectTrigger className="w-full bg-zinc-800 border-zinc-700 text-white">
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Select organization">
                 <div className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-[#D6FF25]" />
+                  <Building2 className="h-4 w-4 text-black" />
                   <span className="truncate">{currentOrganization?.name || 'Select'}</span>
                 </div>
               </SelectValue>
             </SelectTrigger>
-            <SelectContent className="bg-zinc-800 border-zinc-700">
+            <SelectContent>
               {organizations.map((org) => (
                 <SelectItem
                   key={org.id}
                   value={org.id}
-                  className="text-white focus:bg-zinc-700 focus:text-white"
                 >
                   {org.name}
                 </SelectItem>
@@ -87,7 +86,7 @@ export function Sidebar() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="flex-1 px-3 py-4 space-y-2">
           {navItems.map((item) => {
             const isActive = pathname === item.href ||
               (item.href !== '/dashboard' && pathname.startsWith(item.href));
@@ -96,10 +95,10 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold transition-all border-2',
                   isActive
-                    ? 'bg-[#D6FF25]/10 text-[#D6FF25]'
-                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+                    ? 'bg-brand text-black border-black shadow-brutal-sm'
+                    : 'text-gray-700 border-transparent hover:border-black hover:bg-gray-100'
                 )}
               >
                 <item.icon className="h-5 w-5" />
@@ -110,21 +109,21 @@ export function Sidebar() {
         </nav>
 
         {/* User & Logout */}
-        <div className="border-t border-zinc-800 p-4">
+        <div className="border-t-2 border-black p-4 bg-gray-50">
           <div className="flex items-center gap-3 mb-3">
-            <div className="h-9 w-9 rounded-full bg-[#D6FF25]/20 flex items-center justify-center">
-              <span className="text-sm font-medium text-[#D6FF25]">
+            <div className="h-10 w-10 rounded-lg border-2 border-black bg-brand flex items-center justify-center shadow-brutal-sm">
+              <span className="text-sm font-bold text-black">
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{user?.name}</p>
-              <p className="text-xs text-zinc-500 truncate">{user?.email}</p>
+              <p className="text-sm font-bold text-black truncate">{user?.name}</p>
+              <p className="text-xs text-gray-600 truncate">{user?.email}</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
+            className="flex items-center gap-2 w-full px-3 py-2.5 text-sm font-bold text-black bg-white border-2 border-black rounded-lg shadow-brutal-sm transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
           >
             <LogOut className="h-4 w-4" />
             Sign Out

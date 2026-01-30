@@ -53,9 +53,9 @@ interface Organization {
 }
 
 const roleColors: Record<string, string> = {
-  OWNER: 'bg-yellow-500/20 text-yellow-400',
-  ADMIN: 'bg-blue-500/20 text-blue-400',
-  MEMBER: 'bg-zinc-500/20 text-zinc-400',
+  OWNER: 'bg-yellow-400 text-black border-black',
+  ADMIN: 'bg-blue-400 text-black border-black',
+  MEMBER: 'bg-gray-200 text-black border-black',
 };
 
 const roleIcons: Record<string, React.ReactNode> = {
@@ -167,10 +167,10 @@ export default function MembersPage() {
   if (!currentOrganization) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-white mb-2">No Organization Selected</h2>
-          <p className="text-zinc-400">Please select an organization from the sidebar.</p>
-        </div>
+        <Card className="p-8 text-center">
+          <h2 className="text-xl font-bold text-black mb-2">No Organization Selected</h2>
+          <p className="text-gray-600">Please select an organization from the sidebar.</p>
+        </Card>
       </div>
     );
   }
@@ -180,15 +180,15 @@ export default function MembersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Team Members</h1>
-          <p className="text-zinc-400 mt-1">
+          <h1 className="text-3xl font-bold text-black">Team Members</h1>
+          <p className="text-gray-600 mt-1">
             Manage who has access to your organization.
           </p>
         </div>
         {isCurrentUserOwner && (
           <Button
             onClick={() => setAddModalOpen(true)}
-            className="bg-[#D6FF25] text-black hover:bg-[#c2eb1f]"
+            variant="primary"
           >
             <UserPlus className="h-4 w-4 mr-2" />
             Add Member
@@ -197,10 +197,12 @@ export default function MembersPage() {
       </div>
 
       {/* Members List */}
-      <Card className="bg-zinc-900 border-zinc-800">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
-            <Users className="h-5 w-5 text-[#D6FF25]" />
+          <CardTitle className="text-xl text-black flex items-center gap-2">
+            <div className="p-2 bg-brand rounded-lg border-2 border-black">
+              <Users className="h-5 w-5 text-black" />
+            </div>
             Members ({organization?.members?.length || 0})
           </CardTitle>
         </CardHeader>
@@ -208,25 +210,27 @@ export default function MembersPage() {
           {isLoading ? (
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center gap-4 p-4 rounded-lg bg-zinc-800/50 animate-pulse">
-                  <div className="h-10 w-10 rounded-full bg-zinc-700"></div>
+                <div key={i} className="flex items-center gap-4 p-4 rounded-lg border-2 border-gray-200 animate-pulse">
+                  <div className="h-10 w-10 rounded-lg bg-gray-200"></div>
                   <div className="flex-1">
-                    <div className="h-4 bg-zinc-700 rounded w-32 mb-2"></div>
-                    <div className="h-3 bg-zinc-700 rounded w-48"></div>
+                    <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-48"></div>
                   </div>
                 </div>
               ))}
             </div>
           ) : !organization?.members || organization.members.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <Users className="h-12 w-12 text-zinc-700 mb-4" />
-              <h3 className="text-lg font-medium text-white mb-2">No members yet</h3>
-              <p className="text-zinc-400 text-center">
+              <div className="h-16 w-16 rounded-xl border-2 border-black bg-gray-100 flex items-center justify-center mb-4 shadow-brutal-sm">
+                <Users className="h-8 w-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-bold text-black mb-2">No members yet</h3>
+              <p className="text-gray-600 text-center">
                 Add team members to collaborate on your courses.
               </p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {organization.members
                 .sort((a, b) => {
                   const roleOrder = { OWNER: 0, ADMIN: 1, MEMBER: 2 };
@@ -235,22 +239,22 @@ export default function MembersPage() {
                 .map((member) => (
                   <div
                     key={member.id}
-                    className="flex items-center justify-between p-4 rounded-lg bg-zinc-800/50"
+                    className="flex items-center justify-between p-4 rounded-lg border-2 border-black bg-gray-50 shadow-brutal-sm hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-full bg-[#D6FF25]/20 flex items-center justify-center">
-                        <span className="text-sm font-medium text-[#D6FF25]">
+                      <div className="h-10 w-10 rounded-lg border-2 border-black bg-brand flex items-center justify-center">
+                        <span className="text-sm font-bold text-black">
                           {member.user.name?.charAt(0).toUpperCase() || 'U'}
                         </span>
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="font-medium text-white">{member.user.name}</h3>
+                          <h3 className="font-bold text-black">{member.user.name}</h3>
                           {member.user.id === user?.id && (
-                            <span className="text-xs text-zinc-500">(You)</span>
+                            <span className="text-xs font-medium text-gray-500">(You)</span>
                           )}
                         </div>
-                        <p className="text-sm text-zinc-400">{member.user.email}</p>
+                        <p className="text-sm text-gray-600">{member.user.email}</p>
                       </div>
                     </div>
 
@@ -260,14 +264,14 @@ export default function MembersPage() {
                           value={member.role}
                           onValueChange={(value) => handleUpdateRole(member.id, value)}
                         >
-                          <SelectTrigger className="w-32 bg-zinc-800 border-zinc-700 text-white">
+                          <SelectTrigger className="w-32">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent className="bg-zinc-800 border-zinc-700">
-                            <SelectItem value="ADMIN" className="text-white focus:bg-zinc-700 focus:text-white">
+                          <SelectContent>
+                            <SelectItem value="ADMIN">
                               Admin
                             </SelectItem>
-                            <SelectItem value="MEMBER" className="text-white focus:bg-zinc-700 focus:text-white">
+                            <SelectItem value="MEMBER">
                               Member
                             </SelectItem>
                           </SelectContent>
@@ -287,7 +291,7 @@ export default function MembersPage() {
                             setMemberToRemove(member);
                             setRemoveModalOpen(true);
                           }}
-                          className="text-zinc-500 hover:text-red-400 transition-colors p-2"
+                          className="p-2 rounded border-2 border-transparent hover:border-red-500 hover:bg-red-50 text-gray-500 hover:text-red-500 transition-all"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -301,36 +305,42 @@ export default function MembersPage() {
       </Card>
 
       {/* Roles Description */}
-      <Card className="bg-zinc-900 border-zinc-800">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-white text-base">Role Permissions</CardTitle>
+          <CardTitle className="text-lg text-black">Role Permissions</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 rounded-lg bg-zinc-800/50">
+            <div className="p-4 rounded-lg border-2 border-black bg-yellow-50 shadow-brutal-sm">
               <div className="flex items-center gap-2 mb-2">
-                <Crown className="h-4 w-4 text-yellow-400" />
-                <span className="font-medium text-white">Owner</span>
+                <div className="p-1.5 bg-yellow-400 rounded-lg border-2 border-black">
+                  <Crown className="h-4 w-4 text-black" />
+                </div>
+                <span className="font-bold text-black">Owner</span>
               </div>
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-gray-600">
                 Full access including billing, member management, and organization settings.
               </p>
             </div>
-            <div className="p-4 rounded-lg bg-zinc-800/50">
+            <div className="p-4 rounded-lg border-2 border-black bg-blue-50 shadow-brutal-sm">
               <div className="flex items-center gap-2 mb-2">
-                <Shield className="h-4 w-4 text-blue-400" />
-                <span className="font-medium text-white">Admin</span>
+                <div className="p-1.5 bg-blue-400 rounded-lg border-2 border-black">
+                  <Shield className="h-4 w-4 text-black" />
+                </div>
+                <span className="font-bold text-black">Admin</span>
               </div>
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-gray-600">
                 Can manage courses, templates, and content. Cannot manage billing or members.
               </p>
             </div>
-            <div className="p-4 rounded-lg bg-zinc-800/50">
+            <div className="p-4 rounded-lg border-2 border-black bg-gray-50 shadow-brutal-sm">
               <div className="flex items-center gap-2 mb-2">
-                <User className="h-4 w-4 text-zinc-400" />
-                <span className="font-medium text-white">Member</span>
+                <div className="p-1.5 bg-gray-300 rounded-lg border-2 border-black">
+                  <User className="h-4 w-4 text-black" />
+                </div>
+                <span className="font-bold text-black">Member</span>
               </div>
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-gray-600">
                 Can view and edit assigned courses. Limited access to organization features.
               </p>
             </div>
@@ -340,39 +350,38 @@ export default function MembersPage() {
 
       {/* Add Member Modal */}
       <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
-        <DialogContent className="bg-zinc-900 border-zinc-800">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle className="text-white">Add Team Member</DialogTitle>
-            <DialogDescription className="text-zinc-400">
+            <DialogTitle>Add Team Member</DialogTitle>
+            <DialogDescription>
               Invite someone to join your organization.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-zinc-300">Email or User ID</Label>
+              <Label>Email or User ID</Label>
               <Input
                 value={newMemberEmail}
                 onChange={(e) => setNewMemberEmail(e.target.value)}
-                className="bg-zinc-800 border-zinc-700 text-white"
                 placeholder="member@example.com"
               />
             </div>
 
             <div className="space-y-2">
-              <Label className="text-zinc-300">Role</Label>
+              <Label>Role</Label>
               <Select
                 value={newMemberRole}
                 onValueChange={(value: 'ADMIN' | 'MEMBER') => setNewMemberRole(value)}
               >
-                <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-zinc-800 border-zinc-700">
-                  <SelectItem value="ADMIN" className="text-white focus:bg-zinc-700 focus:text-white">
+                <SelectContent>
+                  <SelectItem value="ADMIN">
                     Admin
                   </SelectItem>
-                  <SelectItem value="MEMBER" className="text-white focus:bg-zinc-700 focus:text-white">
+                  <SelectItem value="MEMBER">
                     Member
                   </SelectItem>
                 </SelectContent>
@@ -384,13 +393,12 @@ export default function MembersPage() {
             <Button
               variant="outline"
               onClick={() => setAddModalOpen(false)}
-              className="bg-zinc-800 border-zinc-700 text-white"
             >
               Cancel
             </Button>
             <Button
               onClick={handleAddMember}
-              className="bg-[#D6FF25] text-black hover:bg-[#c2eb1f]"
+              variant="primary"
               disabled={isAdding || !newMemberEmail}
             >
               {isAdding ? 'Adding...' : 'Add Member'}
@@ -401,10 +409,10 @@ export default function MembersPage() {
 
       {/* Remove Member Modal */}
       <Dialog open={removeModalOpen} onOpenChange={setRemoveModalOpen}>
-        <DialogContent className="bg-zinc-900 border-zinc-800">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle className="text-white">Remove Member</DialogTitle>
-            <DialogDescription className="text-zinc-400">
+            <DialogTitle>Remove Member</DialogTitle>
+            <DialogDescription>
               Are you sure you want to remove {memberToRemove?.user.name} from the organization?
               They will lose access to all organization resources.
             </DialogDescription>
@@ -413,7 +421,6 @@ export default function MembersPage() {
             <Button
               variant="outline"
               onClick={() => setRemoveModalOpen(false)}
-              className="bg-zinc-800 border-zinc-700 text-white"
             >
               Cancel
             </Button>
