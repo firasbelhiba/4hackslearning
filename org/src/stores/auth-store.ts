@@ -26,11 +26,13 @@ interface AuthState {
   currentOrganization: Organization | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isInitialized: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   fetchProfile: () => Promise<void>;
   fetchOrganizations: () => Promise<void>;
   setCurrentOrganization: (org: Organization) => void;
+  initialize: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -39,6 +41,30 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   currentOrganization: null,
   isLoading: true,
   isAuthenticated: false,
+  isInitialized: false,
+
+  initialize: async () => {
+    // Prevent multiple initializations
+    if (get().isInitialized) return;
+
+    const accessToken = Cookies.get('accessToken');
+
+    if (!accessToken) {
+      set({ isLoading: false, isInitialized: true });
+      return;
+    }
+
+    try {
+      await get().fetchProfile();
+    } catch (error) {
+      // Token invalid or expired
+      Cookies.remove('accessToken');
+      Cookies.remove('refreshToken');
+      set({ isLoading: false, isInitialized: true });
+    }
+
+    set({ isInitialized: true });
+  },
 
   login: async (email: string, password: string) => {
     const response = await authApi.login({ email, password });
