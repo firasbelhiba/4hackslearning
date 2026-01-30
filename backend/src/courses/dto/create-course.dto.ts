@@ -9,6 +9,7 @@ import {
   MinLength,
   MaxLength,
   Min,
+  IsUUID,
 } from 'class-validator';
 import { CourseLevel } from '@prisma/client';
 
@@ -69,4 +70,9 @@ export class CreateCourseDto {
   @IsOptional()
   @IsBoolean()
   isPublished?: boolean;
+
+  @ApiPropertyOptional({ example: 'uuid-of-organization' })
+  @IsOptional()
+  @IsUUID()
+  organizationId?: string;
 }

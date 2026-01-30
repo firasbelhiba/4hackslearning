@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -30,6 +30,15 @@ const testimonials = [
 
 export function TestimonialsSection() {
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Auto-play carousel
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev === testimonials.length - 1 ? 0 : prev + 1));
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const goToPrevious = () => {
     setCurrentIndex((prev) => (prev === 0 ? testimonials.length - 1 : prev - 1));
@@ -75,8 +84,8 @@ export function TestimonialsSection() {
           ))}
         </div>
 
-        {/* Pagination Dots & Navigation */}
-        <div className="flex items-center justify-center gap-4">
+        {/* Pagination Dots & Navigation - Centered */}
+        <div className="flex flex-col items-center gap-4">
           {/* Dots */}
           <div className="flex gap-2">
             {testimonials.map((_, index) => (
@@ -90,7 +99,7 @@ export function TestimonialsSection() {
             ))}
           </div>
 
-          {/* Navigation Arrows */}
+          {/* Navigation Arrows - Below dots */}
           <div className="flex gap-2">
             <button
               onClick={goToPrevious}

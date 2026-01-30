@@ -1,19 +1,21 @@
-export function PartnersSection() {
-  const partners = [
-    { name: 'David Eccles School of Business', logo: '/partners/david-eccles.png' },
-    { name: 'Harvard University', logo: '/partners/harvard.png' },
-    { name: 'Stanford', logo: '/partners/stanford.png' },
-    { name: 'Google', logo: '/partners/google.png' },
-    { name: 'Tokopedia', logo: '/partners/tokopedia.png' },
-    { name: 'University of Cambridge', logo: '/partners/cambridge.png' },
-    { name: 'Oxford', logo: '/partners/oxford.png' },
-    { name: 'Microsoft', logo: '/partners/microsoft.png' },
-    { name: 'Amazon', logo: '/partners/amazon.png' },
-    { name: 'Samsung', logo: '/partners/samsung.png' },
-  ];
+import Image from 'next/image';
 
+const partners = [
+  { name: 'Partner 1', logo: '/partners/Group 5.png' },
+  { name: 'Partner 2', logo: '/partners/Group 6.png' },
+  { name: 'Partner 3', logo: '/partners/Frame.png' },
+  { name: 'Partner 4', logo: '/partners/XMLID_1_.png' },
+  { name: 'Tokopedia', logo: '/partners/cdnlogo.com_tokopedia 1.png' },
+  { name: 'Partner 5', logo: '/partners/Vector.png' },
+  { name: 'Partner 6', logo: '/partners/Vector (1).png' },
+  { name: 'Partner 7', logo: '/partners/Group 9.png' },
+  { name: 'Partner 8', logo: '/partners/Group 10.png' },
+  { name: 'Partner 9', logo: '/partners/Vector (2).png' },
+];
+
+export function PartnersSection() {
   return (
-    <section className="py-16 bg-pink-50">
+    <section className="py-16 bg-[#FCFAF7]">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-12">
@@ -30,13 +32,18 @@ export function PartnersSection() {
 
         {/* Partner Logos Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 items-center justify-items-center">
-          {partners.map((partner) => (
+          {partners.map((partner, index) => (
             <div
-              key={partner.name}
-              className="flex items-center justify-center h-16 grayscale hover:grayscale-0 transition-all opacity-70 hover:opacity-100"
+              key={index}
+              className="flex items-center justify-center h-10 grayscale hover:grayscale-0 transition-all opacity-70 hover:opacity-100"
             >
-              {/* Placeholder for partner logos - replace with actual images */}
-              <span className="text-lg font-semibold text-gray-600">{partner.name}</span>
+              <Image
+                src={partner.logo}
+                alt={partner.name}
+                width={80}
+                height={32}
+                className="h-6 w-auto object-contain"
+              />
             </div>
           ))}
         </div>

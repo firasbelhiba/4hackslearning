@@ -29,6 +29,11 @@ export class CreateLessonDto {
   @Min(0)
   videoDuration?: number;
 
+  @ApiPropertyOptional({ example: '123456789', description: 'Vimeo video ID' })
+  @IsOptional()
+  @IsString()
+  vimeoVideoId?: string;
+
   @ApiProperty({ example: 1 })
   @IsInt()
   @Min(1)

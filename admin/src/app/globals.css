@@ -1,0 +1,148 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Brand Colors - 4hacks Learning */
+    --brand: 72 100% 57%; /* #D6FF25 */
+    --brand-light: 72 100% 70%;
+    --brand-dark: 72 100% 45%;
+
+    /* Supporting Colors */
+    --pink: 330 81% 60%; /* #EC4899 */
+    --purple: 258 90% 66%; /* #8B5CF6 */
+    --yellow: 48 96% 53%; /* #FACC15 */
+    --orange: 14 100% 56%; /* #FF4B1E */
+    --gold: 47 99% 50%; /* #FEC601 */
+
+    /* Base Colors */
+    --background: 40 20% 98%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 72 100% 57%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 72 100% 57%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 0%;
+    --input: 0 0% 0%;
+    --ring: 72 100% 57%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  h1 {
+    @apply text-2xl sm:text-3xl font-bold leading-tight;
+  }
+
+  h2 {
+    @apply text-xl sm:text-2xl font-bold leading-tight;
+  }
+
+  h3 {
+    @apply text-lg sm:text-xl font-bold leading-snug;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    touch-action: manipulation;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-black;
+  }
+}
+
+@layer components {
+  .btn-brutal {
+    @apply relative inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 font-bold text-black bg-white border-2 border-black rounded-lg shadow-brutal transition-all duration-150;
+  }
+
+  .btn-brutal:hover {
+    @apply translate-x-[2px] translate-y-[2px] shadow-none;
+  }
+
+  .btn-brutal-primary {
+    @apply btn-brutal bg-brand;
+  }
+
+  .card-brutal {
+    @apply relative bg-white border-2 border-black rounded-xl shadow-brutal p-4 sm:p-6;
+  }
+
+  .card-brutal:hover {
+    @apply translate-x-[2px] translate-y-[2px] shadow-brutal-sm;
+  }
+
+  .input-brutal {
+    @apply w-full px-3 sm:px-4 py-2 sm:py-3 bg-white border-2 border-black rounded-lg shadow-brutal-sm focus:outline-none focus:ring-2 focus:ring-brand;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+@media (min-width: 640px) {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #000;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #333;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

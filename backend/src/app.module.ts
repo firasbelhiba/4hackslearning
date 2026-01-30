@@ -9,6 +9,8 @@ import { QuizzesModule } from './quizzes/quizzes.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { CertificatesModule } from './certificates/certificates.module';
 import { UploadModule } from './upload/upload.module';
+import { OrganizationsModule } from './organizations/organizations.module';
+import { CertificateTemplatesModule } from './certificate-templates/certificate-templates.module';
 
 @Module({
   imports: [
@@ -29,6 +31,8 @@ import { UploadModule } from './upload/upload.module';
     EnrollmentsModule,
     CertificatesModule,
     UploadModule,
+    OrganizationsModule,
+    CertificateTemplatesModule,
   ],
 })
 export class AppModule {}

@@ -17,7 +17,7 @@ const features = [
 
 export function WhySection() {
   return (
-    <section className="py-16 lg:py-24 bg-pink-50">
+    <section className="py-16 lg:py-24 bg-white">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <h2 className="text-3xl md:text-4xl font-bold mb-12 font-display">
@@ -27,7 +27,7 @@ export function WhySection() {
         {/* Feature Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {features.map((feature, index) => (
-            <Card key={index} className="bg-white">
+            <Card key={index} className="bg-[#E6FF7B]">
               <CardHeader>
                 <CardTitle className="text-lg font-bold">{feature.title}</CardTitle>
               </CardHeader>

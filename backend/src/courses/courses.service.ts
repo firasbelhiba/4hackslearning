@@ -2,8 +2,10 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { OrganizationsService } from '../organizations/organizations.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { CreateModuleDto } from './dto/create-module.dto';
@@ -12,7 +14,10 @@ import { CourseFiltersDto } from './dto/course-filters.dto';
 
 @Injectable()
 export class CoursesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private organizationsService: OrganizationsService,
+  ) {}
 
   async create(instructorId: string, dto: CreateCourseDto) {
     const existingCourse = await this.prisma.course.findUnique({
@@ -260,5 +265,166 @@ export class CoursesService {
     });
 
     return Object.entries(tagCounts).map(([name, count]) => ({ name, count }));
+  }
+
+  // ==========================================
+  // Organization-based course methods
+  // ==========================================
+
+  /**
+   * Create a course for an organization (organizer portal)
+   */
+  async createForOrganization(
+    organizationId: string,
+    userId: string,
+    dto: CreateCourseDto,
+  ) {
+    // Verify user has access to this organization
+    await this.organizationsService.verifyMemberAccess(organizationId, userId);
+
+    const existingCourse = await this.prisma.course.findUnique({
+      where: { slug: dto.slug },
+    });
+
+    if (existingCourse) {
+      throw new ConflictException('Course with this slug already exists');
+    }
+
+    return this.prisma.course.create({
+      data: {
+        ...dto,
+        instructorId: userId,
+        organizationId,
+      },
+      include: {
+        instructor: {
+          select: { id: true, name: true, avatar: true },
+        },
+        organization: {
+          select: { id: true, name: true, slug: true },
+        },
+      },
+    });
+  }
+
+  /**
+   * Get all courses for an organization
+   */
+  async findByOrganization(
+    organizationId: string,
+    filters: { skip?: number; take?: number; isPublished?: boolean } = {},
+  ) {
+    const { skip = 0, take = 50, isPublished } = filters;
+
+    const where: any = { organizationId };
+    if (typeof isPublished === 'boolean') {
+      where.isPublished = isPublished;
+    }
+
+    const [courses, total] = await Promise.all([
+      this.prisma.course.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          instructor: {
+            select: { id: true, name: true, avatar: true },
+          },
+          _count: {
+            select: { enrollments: true, modules: true },
+          },
+        },
+      }),
+      this.prisma.course.count({ where }),
+    ]);
+
+    return { courses, total };
+  }
+
+  /**
+   * Update a course (with organization access check)
+   */
+  async updateForOrganization(
+    courseId: string,
+    userId: string,
+    dto: UpdateCourseDto,
+  ) {
+    const course = await this.findById(courseId);
+
+    if (!course.organizationId) {
+      throw new ForbiddenException('This course is not part of an organization');
+    }
+
+    // Verify user has access to this organization
+    await this.organizationsService.verifyMemberAccess(
+      course.organizationId,
+      userId,
+    );
+
+    if (dto.slug) {
+      const existingCourse = await this.prisma.course.findFirst({
+        where: { slug: dto.slug, id: { not: courseId } },
+      });
+
+      if (existingCourse) {
+        throw new ConflictException('Course with this slug already exists');
+      }
+    }
+
+    return this.prisma.course.update({
+      where: { id: courseId },
+      data: dto,
+      include: {
+        instructor: {
+          select: { id: true, name: true, avatar: true },
+        },
+        organization: {
+          select: { id: true, name: true, slug: true },
+        },
+      },
+    });
+  }
+
+  /**
+   * Delete a course (with organization access check)
+   */
+  async deleteForOrganization(courseId: string, userId: string) {
+    const course = await this.findById(courseId);
+
+    if (!course.organizationId) {
+      throw new ForbiddenException('This course is not part of an organization');
+    }
+
+    // Verify user has access to this organization
+    await this.organizationsService.verifyMemberAccess(
+      course.organizationId,
+      userId,
+    );
+
+    await this.prisma.course.delete({ where: { id: courseId } });
+  }
+
+  /**
+   * Verify user has access to a course's organization
+   */
+  async verifyOrganizationAccess(courseId: string, userId: string) {
+    const course = await this.prisma.course.findUnique({
+      where: { id: courseId },
+      select: { organizationId: true },
+    });
+
+    if (!course) {
+      throw new NotFoundException('Course not found');
+    }
+
+    if (!course.organizationId) {
+      throw new ForbiddenException('This course is not part of an organization');
+    }
+
+    return this.organizationsService.verifyMemberAccess(
+      course.organizationId,
+      userId,
+    );
   }
 }
