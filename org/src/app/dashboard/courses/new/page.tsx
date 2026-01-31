@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from '@/components/ui/use-toast';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Plus, X, Target, Users, CheckCircle, Globe } from 'lucide-react';
 import Link from 'next/link';
 
 export default function NewCoursePage() {
@@ -33,9 +33,14 @@ export default function NewCoursePage() {
     category: '',
     tags: '',
     thumbnail: '',
+    promoVideoUrl: '',
     price: 0,
     isFree: true,
     isPublished: false,
+    language: 'English',
+    requirements: [''],
+    targetAudience: [''],
+    outcomes: [''],
   });
 
   const generateSlug = (title: string) => {
@@ -56,6 +61,25 @@ export default function NewCoursePage() {
     });
   };
 
+  // Array field handlers
+  const addArrayItem = (field: 'requirements' | 'targetAudience' | 'outcomes') => {
+    setFormData({
+      ...formData,
+      [field]: [...formData[field], ''],
+    });
+  };
+
+  const updateArrayItem = (field: 'requirements' | 'targetAudience' | 'outcomes', index: number, value: string) => {
+    const updated = [...formData[field]];
+    updated[index] = value;
+    setFormData({ ...formData, [field]: updated });
+  };
+
+  const removeArrayItem = (field: 'requirements' | 'targetAudience' | 'outcomes', index: number) => {
+    const updated = formData[field].filter((_, i) => i !== index);
+    setFormData({ ...formData, [field]: updated.length > 0 ? updated : [''] });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentOrganization) return;
@@ -66,6 +90,9 @@ export default function NewCoursePage() {
         ...formData,
         tags: formData.tags.split(',').map((t) => t.trim()).filter(Boolean),
         price: formData.isFree ? 0 : Number(formData.price),
+        requirements: formData.requirements.filter(Boolean),
+        targetAudience: formData.targetAudience.filter(Boolean),
+        outcomes: formData.outcomes.filter(Boolean),
       };
 
       const response = await orgCoursesApi.create(currentOrganization.id, payload);
@@ -98,7 +125,7 @@ export default function NewCoursePage() {
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-4xl">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href="/dashboard/courses">
@@ -113,10 +140,11 @@ export default function NewCoursePage() {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Basic Info Card */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl text-black">Course Details</CardTitle>
+            <CardTitle className="text-xl text-black">Basic Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Title & Slug */}
@@ -145,33 +173,29 @@ export default function NewCoursePage() {
 
             {/* Short Description */}
             <div className="space-y-2">
-              <Label htmlFor="shortDescription">
-                Short Description
-              </Label>
+              <Label htmlFor="shortDescription">Short Description</Label>
               <Input
                 id="shortDescription"
                 value={formData.shortDescription}
                 onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
-                placeholder="A brief summary of the course"
+                placeholder="A brief summary of the course (shown in cards)"
               />
             </div>
 
             {/* Full Description */}
             <div className="space-y-2">
-              <Label htmlFor="description">
-                Full Description
-              </Label>
+              <Label htmlFor="description">Full Description</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 className="min-h-[150px]"
-                placeholder="Detailed course description with learning objectives..."
+                placeholder="Detailed course description..."
               />
             </div>
 
-            {/* Level & Category */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Level, Category & Language */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label>Level *</Label>
                 <Select
@@ -195,8 +219,28 @@ export default function NewCoursePage() {
                   id="category"
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  placeholder="e.g., Blockchain, Web Development"
+                  placeholder="e.g., Blockchain, Web Dev"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Language</Label>
+                <Select
+                  value={formData.language}
+                  onValueChange={(value) => setFormData({ ...formData, language: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="English">English</SelectItem>
+                    <SelectItem value="Spanish">Spanish</SelectItem>
+                    <SelectItem value="French">French</SelectItem>
+                    <SelectItem value="German">German</SelectItem>
+                    <SelectItem value="Arabic">Arabic</SelectItem>
+                    <SelectItem value="Chinese">Chinese</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -210,18 +254,164 @@ export default function NewCoursePage() {
                 placeholder="Comma-separated tags, e.g., hedera, smart contracts, web3"
               />
             </div>
+          </CardContent>
+        </Card>
 
-            {/* Thumbnail */}
-            <div className="space-y-2">
-              <Label htmlFor="thumbnail">Thumbnail URL</Label>
-              <Input
-                id="thumbnail"
-                value={formData.thumbnail}
-                onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
-                placeholder="https://example.com/image.jpg"
-              />
+        {/* Media Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl text-black">Media</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="thumbnail">Thumbnail URL</Label>
+                <Input
+                  id="thumbnail"
+                  value={formData.thumbnail}
+                  onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="promoVideoUrl">Promotional Video URL</Label>
+                <Input
+                  id="promoVideoUrl"
+                  value={formData.promoVideoUrl}
+                  onChange={(e) => setFormData({ ...formData, promoVideoUrl: e.target.value })}
+                  placeholder="https://vimeo.com/... or YouTube URL"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Course Details Card (Udemy-style) */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl text-black flex items-center gap-2">
+              <Target className="h-5 w-5" />
+              Course Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Learning Outcomes / What you'll learn */}
+            <div className="space-y-3">
+              <Label className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                What students will learn
+              </Label>
+              <p className="text-sm text-gray-500">List the key learning outcomes for this course</p>
+              {formData.outcomes.map((outcome, index) => (
+                <div key={index} className="flex gap-2">
+                  <Input
+                    value={outcome}
+                    onChange={(e) => updateArrayItem('outcomes', index, e.target.value)}
+                    placeholder="e.g., Build and deploy smart contracts on Hedera"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => removeArrayItem('outcomes', index)}
+                    disabled={formData.outcomes.length === 1 && !outcome}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => addArrayItem('outcomes')}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Add Outcome
+              </Button>
             </div>
 
+            {/* Requirements */}
+            <div className="space-y-3">
+              <Label className="flex items-center gap-2">
+                <Globe className="h-4 w-4 text-blue-600" />
+                Requirements / Prerequisites
+              </Label>
+              <p className="text-sm text-gray-500">What do students need to know before taking this course?</p>
+              {formData.requirements.map((req, index) => (
+                <div key={index} className="flex gap-2">
+                  <Input
+                    value={req}
+                    onChange={(e) => updateArrayItem('requirements', index, e.target.value)}
+                    placeholder="e.g., Basic understanding of JavaScript"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => removeArrayItem('requirements', index)}
+                    disabled={formData.requirements.length === 1 && !req}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => addArrayItem('requirements')}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Add Requirement
+              </Button>
+            </div>
+
+            {/* Target Audience */}
+            <div className="space-y-3">
+              <Label className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-purple-600" />
+                Who is this course for?
+              </Label>
+              <p className="text-sm text-gray-500">Describe your ideal student</p>
+              {formData.targetAudience.map((audience, index) => (
+                <div key={index} className="flex gap-2">
+                  <Input
+                    value={audience}
+                    onChange={(e) => updateArrayItem('targetAudience', index, e.target.value)}
+                    placeholder="e.g., Web developers looking to learn blockchain"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => removeArrayItem('targetAudience', index)}
+                    disabled={formData.targetAudience.length === 1 && !audience}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => addArrayItem('targetAudience')}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Add Target Audience
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Pricing & Publishing Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl text-black">Pricing & Publishing</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
             {/* Pricing */}
             <div className="space-y-4">
               <div className="flex items-center gap-4">
@@ -264,28 +454,21 @@ export default function NewCoursePage() {
                 <span className="font-bold text-black">Publish immediately</span>
               </label>
             </div>
-
-            {/* Actions */}
-            <div className="flex justify-end gap-3 pt-6 border-t-2 border-black">
-              <Link href="/dashboard/courses">
-                <Button
-                  type="button"
-                  variant="outline"
-                >
-                  Cancel
-                </Button>
-              </Link>
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={isLoading}
-              >
-                <Save className="h-4 w-4 mr-2" />
-                {isLoading ? 'Creating...' : 'Create Course'}
-              </Button>
-            </div>
           </CardContent>
         </Card>
+
+        {/* Actions */}
+        <div className="flex justify-end gap-3">
+          <Link href="/dashboard/courses">
+            <Button type="button" variant="outline">
+              Cancel
+            </Button>
+          </Link>
+          <Button type="submit" variant="primary" disabled={isLoading}>
+            <Save className="h-4 w-4 mr-2" />
+            {isLoading ? 'Creating...' : 'Create Course'}
+          </Button>
+        </div>
       </form>
     </div>
   );
