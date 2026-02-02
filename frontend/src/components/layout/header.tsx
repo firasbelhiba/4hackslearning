@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Menu, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Menu, X, User, Settings, LogOut, LayoutDashboard, ChevronDown } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
 import { cn } from '@/lib/utils';
@@ -18,13 +18,27 @@ const navLinks = [
 
 export function Header() {
   const pathname = usePathname();
-  const { isAuthenticated, logout } = useAuthStore();
+  const { isAuthenticated, user, logout } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
+    setUserMenuOpen(false);
   }, [pathname]);
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -74,16 +88,71 @@ export function Header() {
         {/* Auth Buttons - Desktop */}
         <div className="hidden lg:flex items-center gap-3 xl:gap-4">
           {isAuthenticated ? (
-            <>
-              <Link href="/dashboard">
-                <Button variant="ghost" size="default">
-                  Dashboard
-                </Button>
-              </Link>
-              <Button variant="outline" size="default" onClick={() => logout()}>
-                Log Out
-              </Button>
-            </>
+            <div className="relative" ref={userMenuRef}>
+              <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center gap-2 p-1 pr-3 rounded-full border-2 border-black bg-white hover:bg-gray-50 transition-colors"
+              >
+                <div className="w-9 h-9 rounded-full bg-brand border-2 border-black flex items-center justify-center overflow-hidden">
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.name || 'User'}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                      }}
+                    />
+                  ) : null}
+                  <span className={cn("text-sm font-bold", user?.avatar && "hidden")}>
+                    {user?.name?.charAt(0).toUpperCase() || 'U'}
+                  </span>
+                </div>
+                <span className="font-medium text-sm max-w-[100px] truncate">
+                  {user?.name?.split(' ')[0] || 'User'}
+                </span>
+                <ChevronDown className={cn("w-4 h-4 transition-transform", userMenuOpen && "rotate-180")} />
+              </button>
+
+              {/* Dropdown Menu */}
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white border-2 border-black rounded-lg shadow-brutal py-2 z-50">
+                  <div className="px-4 py-2 border-b border-gray-200">
+                    <p className="font-bold truncate">{user?.name || 'User'}</p>
+                    <p className="text-sm text-gray-500 truncate">{user?.email}</p>
+                  </div>
+                  <Link
+                    href="/dashboard"
+                    className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 transition-colors"
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    <span>Dashboard</span>
+                  </Link>
+                  <Link
+                    href="/dashboard/settings"
+                    className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 transition-colors"
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span>Settings</span>
+                  </Link>
+                  <div className="border-t border-gray-200 mt-1 pt-1">
+                    <button
+                      onClick={() => {
+                        logout();
+                        setUserMenuOpen(false);
+                      }}
+                      className="flex items-center gap-3 px-4 py-2.5 w-full text-left hover:bg-gray-100 transition-colors text-red-600"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Log Out</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <Link href="/auth/login">
@@ -152,19 +221,47 @@ export function Header() {
           <div className="mt-4 pt-4 border-t border-gray-200 flex flex-col gap-2">
             {isAuthenticated ? (
               <>
+                {/* User Info */}
+                <div className="flex items-center gap-3 px-4 py-3 mb-2">
+                  <div className="w-10 h-10 rounded-full bg-brand border-2 border-black flex items-center justify-center overflow-hidden">
+                    {user?.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={user.name || 'User'}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-sm font-bold">
+                        {user?.name?.charAt(0).toUpperCase() || 'U'}
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-bold">{user?.name || 'User'}</p>
+                    <p className="text-sm text-gray-500">{user?.email}</p>
+                  </div>
+                </div>
                 <Link href="/dashboard" className="block">
-                  <Button variant="outline" className="w-full justify-center">
+                  <Button variant="outline" className="w-full justify-start gap-2">
+                    <LayoutDashboard className="w-4 h-4" />
                     Dashboard
+                  </Button>
+                </Link>
+                <Link href="/dashboard/settings" className="block">
+                  <Button variant="ghost" className="w-full justify-start gap-2">
+                    <Settings className="w-4 h-4" />
+                    Settings
                   </Button>
                 </Link>
                 <Button
                   variant="ghost"
-                  className="w-full justify-center"
+                  className="w-full justify-start gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
                   onClick={() => {
                     logout();
                     setMobileMenuOpen(false);
                   }}
                 >
+                  <LogOut className="w-4 h-4" />
                   Log Out
                 </Button>
               </>

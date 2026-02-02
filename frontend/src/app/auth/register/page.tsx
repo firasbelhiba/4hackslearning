@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -51,12 +52,21 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-brand p-4">
+    <div
+      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: "url('/images/Mask group.png')" }}
+    >
       <div className="w-full max-w-md">
         {/* Logo */}
         <Link href="/" className="flex items-center justify-center mb-8">
-          <span className="text-3xl font-bold">4</span>
-          <span className="text-3xl font-bold text-purple-600">HACKS</span>
+          <Image
+            src="/images/logo-lg.png"
+            alt="4HACKS"
+            width={160}
+            height={54}
+            className="h-12 w-auto"
+            priority
+          />
         </Link>
 
         <Card className="shadow-brutal-lg">
@@ -150,11 +160,11 @@ export default function RegisterPage() {
                 />
                 <label htmlFor="terms" className="text-sm text-gray-600">
                   I agree to the{' '}
-                  <Link href="/terms" className="text-purple-600 hover:underline">
+                  <Link href="/terms" className="text-purple hover:underline">
                     Terms of Service
                   </Link>{' '}
                   and{' '}
-                  <Link href="/privacy" className="text-purple-600 hover:underline">
+                  <Link href="/privacy" className="text-purple hover:underline">
                     Privacy Policy
                   </Link>
                 </label>
@@ -162,7 +172,7 @@ export default function RegisterPage() {
 
               <Button
                 type="submit"
-                variant="primary"
+                variant="secondary"
                 className="w-full"
                 disabled={isLoading}
               >
@@ -172,7 +182,7 @@ export default function RegisterPage() {
 
             <p className="text-center text-sm text-gray-600 mt-6">
               Already have an account?{' '}
-              <Link href="/auth/login" className="text-purple-600 font-medium hover:underline">
+              <Link href="/auth/login" className="text-purple font-medium hover:underline">
                 Log in
               </Link>
             </p>

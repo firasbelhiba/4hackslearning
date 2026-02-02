@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -40,12 +41,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-brand p-4">
+    <div
+      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: "url('/images/Mask group.png')" }}
+    >
       <div className="w-full max-w-md">
         {/* Logo */}
         <Link href="/" className="flex items-center justify-center mb-8">
-          <span className="text-3xl font-bold">4</span>
-          <span className="text-3xl font-bold text-purple-600">HACKS</span>
+          <Image
+            src="/images/logo-lg.png"
+            alt="4HACKS"
+            width={160}
+            height={54}
+            className="h-12 w-auto"
+            priority
+          />
         </Link>
 
         <Card className="shadow-brutal-lg">
@@ -105,7 +115,7 @@ export default function LoginPage() {
                 </label>
                 <Link
                   href="/auth/forgot-password"
-                  className="text-sm text-purple-600 hover:underline"
+                  className="text-sm text-purple hover:underline"
                 >
                   Forgot password?
                 </Link>
@@ -113,7 +123,7 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                variant="primary"
+                variant="secondary"
                 className="w-full"
                 disabled={isLoading}
               >
@@ -123,7 +133,7 @@ export default function LoginPage() {
 
             <p className="text-center text-sm text-gray-600 mt-6">
               Don&apos;t have an account?{' '}
-              <Link href="/auth/register" className="text-purple-600 font-medium hover:underline">
+              <Link href="/auth/register" className="text-purple font-medium hover:underline">
                 Sign up
               </Link>
             </p>

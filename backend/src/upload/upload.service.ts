@@ -13,42 +13,54 @@ export class UploadService {
   private s3Client: S3Client;
   private bucketName: string;
   private publicUrl: string;
+  private isConfigured: boolean = false;
 
   constructor(private configService: ConfigService) {
-    this.s3Client = new S3Client({
-      region: this.configService.get('S3_REGION') || 'auto',
-      endpoint: this.configService.get('S3_ENDPOINT'),
-      credentials: {
-        accessKeyId: this.configService.get('S3_ACCESS_KEY_ID') || '',
-        secretAccessKey: this.configService.get('S3_SECRET_ACCESS_KEY') || '',
-      },
-    });
+    // Support both R2_ and S3_ prefixed environment variables
+    const endpoint = this.configService.get<string>('S3_ENDPOINT') ||
+                     this.configService.get<string>('R2_ENDPOINT');
+    const accessKeyId = this.configService.get<string>('S3_ACCESS_KEY_ID') ||
+                        this.configService.get<string>('R2_ACCESS_KEY_ID');
+    const secretAccessKey = this.configService.get<string>('S3_SECRET_ACCESS_KEY') ||
+                            this.configService.get<string>('R2_SECRET_ACCESS_KEY');
+    this.bucketName = this.configService.get<string>('S3_BUCKET_NAME') ||
+                      this.configService.get<string>('R2_BUCKET_NAME') || '4hacks-uploads';
+    this.publicUrl = this.configService.get<string>('S3_PUBLIC_URL') ||
+                     this.configService.get<string>('R2_PUBLIC_URL') || '';
+    const region = this.configService.get<string>('S3_REGION') || 'auto';
 
-    this.bucketName = this.configService.get('S3_BUCKET_NAME') || '4hacks-learning';
-    this.publicUrl = this.configService.get('S3_PUBLIC_URL') || '';
+    // Only initialize S3 client if credentials are provided
+    if (endpoint && accessKeyId && secretAccessKey) {
+      this.s3Client = new S3Client({
+        region: region,
+        endpoint: endpoint,
+        credentials: {
+          accessKeyId: accessKeyId,
+          secretAccessKey: secretAccessKey,
+        },
+      });
+      this.isConfigured = true;
+    }
   }
 
-  async uploadFile(
+  validateFile(
     file: Express.Multer.File,
-    folder: string = 'uploads',
-  ): Promise<{ url: string; key: string }> {
-    const fileExtension = file.originalname.split('.').pop();
-    const key = `${folder}/${uuidv4()}.${fileExtension}`;
-
-    const command = new PutObjectCommand({
-      Bucket: this.bucketName,
-      Key: key,
-      Body: file.buffer,
-      ContentType: file.mimetype,
-    });
-
-    await this.s3Client.send(command);
-
-    const url = this.publicUrl
-      ? `${this.publicUrl}/${key}`
-      : `https://${this.bucketName}.s3.amazonaws.com/${key}`;
-
-    return { url, key };
+    allowedMimeTypes: string[],
+    maxSize: number,
+  ): void {
+    if (!file) {
+      throw new BadRequestException('No file provided');
+    }
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      throw new BadRequestException(
+        `Invalid file type. Allowed types: ${allowedMimeTypes.join(', ')}`,
+      );
+    }
+    if (file.size > maxSize) {
+      throw new BadRequestException(
+        `File size exceeds ${Math.round(maxSize / 1024 / 1024)}MB limit`,
+      );
+    }
   }
 
   async getPresignedUploadUrl(
@@ -56,6 +68,10 @@ export class UploadService {
     contentType: string,
     folder: string = 'uploads',
   ): Promise<{ uploadUrl: string; fileUrl: string; key: string }> {
+    if (!this.isConfigured) {
+      throw new BadRequestException('R2 storage is not configured');
+    }
+
     const fileExtension = filename.split('.').pop();
     const key = `${folder}/${uuidv4()}.${fileExtension}`;
 
@@ -66,40 +82,70 @@ export class UploadService {
     });
 
     const uploadUrl = await getSignedUrl(this.s3Client, command, {
-      expiresIn: 3600, // 1 hour
+      expiresIn: 3600,
     });
 
-    const fileUrl = this.publicUrl
-      ? `${this.publicUrl}/${key}`
-      : `https://${this.bucketName}.s3.amazonaws.com/${key}`;
-
-    return { uploadUrl, fileUrl, key };
+    return {
+      uploadUrl,
+      fileUrl: `${this.publicUrl}/${key}`,
+      key,
+    };
   }
 
-  async deleteFile(key: string): Promise<void> {
-    const command = new DeleteObjectCommand({
-      Bucket: this.bucketName,
-      Key: key,
-    });
-
-    await this.s3Client.send(command);
-  }
-
-  validateFile(
+  async uploadFile(
     file: Express.Multer.File,
-    allowedTypes: string[],
-    maxSize: number,
-  ): void {
-    if (!allowedTypes.includes(file.mimetype)) {
-      throw new BadRequestException(
-        `Invalid file type. Allowed types: ${allowedTypes.join(', ')}`,
-      );
+    folder: string = 'avatars',
+  ): Promise<{ url: string; key: string }> {
+    if (!this.isConfigured) {
+      throw new BadRequestException('R2 storage is not configured');
     }
 
-    if (file.size > maxSize) {
-      throw new BadRequestException(
-        `File size exceeds limit. Max size: ${maxSize / (1024 * 1024)}MB`,
+    if (!file) {
+      throw new BadRequestException('No file provided');
+    }
+
+    // Generate unique filename
+    const fileExtension = file.originalname.split('.').pop();
+    const fileName = `${folder}/${uuidv4()}.${fileExtension}`;
+
+    try {
+      await this.s3Client.send(
+        new PutObjectCommand({
+          Bucket: this.bucketName,
+          Key: fileName,
+          Body: file.buffer,
+          ContentType: file.mimetype,
+        }),
       );
+
+      // Return the public URL and key
+      return {
+        url: `${this.publicUrl}/${fileName}`,
+        key: fileName,
+      };
+    } catch (error) {
+      console.error('R2 upload error:', error);
+      throw new BadRequestException('Failed to upload file');
+    }
+  }
+
+  async deleteFile(fileUrl: string): Promise<void> {
+    if (!fileUrl || !fileUrl.startsWith(this.publicUrl)) {
+      return;
+    }
+
+    const key = fileUrl.replace(`${this.publicUrl}/`, '');
+
+    try {
+      await this.s3Client.send(
+        new DeleteObjectCommand({
+          Bucket: this.bucketName,
+          Key: key,
+        }),
+      );
+    } catch (error) {
+      console.error('R2 delete error:', error);
+      // Don't throw, just log the error
     }
   }
 }

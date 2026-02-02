@@ -68,17 +68,61 @@ export const authApi = {
   refresh: () => api.post('/auth/refresh'),
 };
 
+// Notification preferences type
+export interface NotificationPreferences {
+  emailCourseUpdates: boolean;
+  emailNewCourses: boolean;
+  emailCompletionReminders: boolean;
+  emailCertificates: boolean;
+  emailMarketing: boolean;
+}
+
+// Certificate settings type
+export interface CertificateSettings {
+  certificateDisplayName: string;
+  linkedinAutoShare: boolean;
+}
+
+// Appearance settings type
+export type ThemePreference = 'LIGHT' | 'DARK' | 'SYSTEM';
+
+export interface AppearanceSettings {
+  theme: ThemePreference;
+  language: string;
+}
+
 // Users API
 export const usersApi = {
   getProfile: () => api.get('/users/me'),
   updateProfile: (data: any) => api.patch('/users/me', data),
+  changePassword: (data: { currentPassword: string; newPassword: string }) =>
+    api.post('/users/me/change-password', data),
+  uploadAvatar: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/users/me/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
   getStats: () => api.get('/users/me/stats'),
+  getNotifications: () => api.get<NotificationPreferences>('/users/me/notifications'),
+  updateNotifications: (data: Partial<NotificationPreferences>) =>
+    api.patch<NotificationPreferences>('/users/me/notifications', data),
+  getCertificateSettings: () => api.get<CertificateSettings>('/users/me/certificate-settings'),
+  updateCertificateSettings: (data: Partial<CertificateSettings>) =>
+    api.patch<CertificateSettings>('/users/me/certificate-settings', data),
+  getAppearanceSettings: () => api.get<AppearanceSettings>('/users/me/appearance-settings'),
+  updateAppearanceSettings: (data: Partial<AppearanceSettings>) =>
+    api.patch<AppearanceSettings>('/users/me/appearance-settings', data),
 };
 
 // Courses API
 export const coursesApi = {
   getAll: (params?: any) => api.get('/courses', { params }),
   getBySlug: (slug: string) => api.get(`/courses/${slug}`),
+  getById: (id: string) => api.get(`/courses/id/${id}`),
   getCategories: () => api.get('/courses/categories'),
   getTags: () => api.get('/courses/tags'),
   create: (data: any) => api.post('/courses', data),

@@ -62,6 +62,12 @@ enum EnrollmentStatus {
   EXPIRED
 }
 
+enum ThemePreference {
+  LIGHT
+  DARK
+  SYSTEM
+}
+
 model User {
   id            String   @id @default(uuid())
   email         String   @unique
@@ -72,6 +78,21 @@ model User {
   role          UserRole @default(STUDENT)
   isActive      Boolean  @default(true)
   refreshToken  String?
+
+  // Notification preferences
+  emailCourseUpdates    Boolean @default(true)  // New lessons, course updates
+  emailNewCourses       Boolean @default(true)  // New courses in enrolled categories
+  emailCompletionReminders Boolean @default(true) // Reminders to complete courses
+  emailCertificates     Boolean @default(true)  // Certificate earned notifications
+  emailMarketing        Boolean @default(false) // Promotional emails, newsletter
+
+  // Certificate settings
+  certificateDisplayName String?  // Custom name shown on certificates (defaults to user name)
+  linkedinAutoShare      Boolean @default(false) // Auto-share certificates to LinkedIn
+
+  // Appearance settings
+  theme    ThemePreference @default(SYSTEM) // Light, Dark, or System
+  language String          @default("en")   // Interface language (en, fr, ar, etc.)
 
   // Relations
   coursesCreated        Course[]               @relation("InstructorCourses")

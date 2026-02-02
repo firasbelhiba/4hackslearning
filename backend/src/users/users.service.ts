@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { User, Prisma } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
@@ -109,5 +110,158 @@ export class UsersService {
   excludePassword(user: User) {
     const { password, refreshToken, ...result } = user;
     return result;
+  }
+
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<boolean> {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Verify current password
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isPasswordValid) {
+      return false;
+    }
+
+    // Hash new password and update
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+
+    return true;
+  }
+
+  async getNotificationPreferences(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        emailCourseUpdates: true,
+        emailNewCourses: true,
+        emailCompletionReminders: true,
+        emailCertificates: true,
+        emailMarketing: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
+  async updateNotificationPreferences(
+    userId: string,
+    data: {
+      emailCourseUpdates?: boolean;
+      emailNewCourses?: boolean;
+      emailCompletionReminders?: boolean;
+      emailCertificates?: boolean;
+      emailMarketing?: boolean;
+    },
+  ) {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data,
+      select: {
+        emailCourseUpdates: true,
+        emailNewCourses: true,
+        emailCompletionReminders: true,
+        emailCertificates: true,
+        emailMarketing: true,
+      },
+    });
+  }
+
+  async getCertificateSettings(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        name: true,
+        certificateDisplayName: true,
+        linkedinAutoShare: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return {
+      certificateDisplayName: user.certificateDisplayName || user.name,
+      linkedinAutoShare: user.linkedinAutoShare,
+    };
+  }
+
+  async updateCertificateSettings(
+    userId: string,
+    data: {
+      certificateDisplayName?: string;
+      linkedinAutoShare?: boolean;
+    },
+  ) {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data,
+      select: {
+        certificateDisplayName: true,
+        linkedinAutoShare: true,
+      },
+    });
+  }
+
+  async getAppearanceSettings(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        theme: true,
+        language: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
+  async updateAppearanceSettings(
+    userId: string,
+    data: {
+      theme?: 'LIGHT' | 'DARK' | 'SYSTEM';
+      language?: string;
+    },
+  ) {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data,
+      select: {
+        theme: true,
+        language: true,
+      },
+    });
   }
 }
