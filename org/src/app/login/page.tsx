@@ -12,12 +12,14 @@ import { toast } from '@/components/ui/use-toast';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isLoading } = useAuthStore();
+  const { login } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
 
     try {
       await login(email, password);
@@ -33,6 +35,7 @@ export default function LoginPage() {
         description: error.response?.data?.message || 'Invalid credentials',
         variant: 'destructive',
       });
+      setIsLoading(false);
     }
   };
 

@@ -34,8 +34,9 @@ export class CreateLessonDto {
   @IsString()
   vimeoVideoId?: string;
 
-  @ApiProperty({ example: 1 })
+  @ApiPropertyOptional({ example: 0 })
+  @IsOptional()
   @IsInt()
-  @Min(1)
-  order: number;
+  @Min(0)
+  order?: number;
 }

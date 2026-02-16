@@ -103,9 +103,9 @@ export class CoursesService {
     return { courses, total };
   }
 
-  async findBySlug(slug: string) {
+  async findBySlug(slugOrId: string, byId = false) {
     const course = await this.prisma.course.findUnique({
-      where: { slug },
+      where: byId ? { id: slugOrId } : { slug: slugOrId },
       include: {
         instructor: {
           select: { id: true, name: true, avatar: true, bio: true },
@@ -196,17 +196,20 @@ export class CoursesService {
     await this.findById(courseId);
 
     // Auto-calculate order if not provided
-    if (dto.order === undefined) {
+    let order = dto.order;
+    if (order === undefined) {
       const lastModule = await this.prisma.module.findFirst({
         where: { courseId },
         orderBy: { order: 'desc' },
       });
-      dto.order = lastModule ? lastModule.order + 1 : 0;
+      order = lastModule ? lastModule.order + 1 : 0;
     }
 
     return this.prisma.module.create({
       data: {
-        ...dto,
+        title: dto.title,
+        description: dto.description,
+        order,
         courseId,
       },
       include: {
@@ -255,17 +258,24 @@ export class CoursesService {
   // Lesson operations
   async createLesson(moduleId: string, dto: CreateLessonDto) {
     // Auto-calculate order if not provided
-    if (dto.order === undefined) {
+    let order = dto.order;
+    if (order === undefined) {
       const lastLesson = await this.prisma.lesson.findFirst({
         where: { moduleId },
         orderBy: { order: 'desc' },
       });
-      dto.order = lastLesson ? lastLesson.order + 1 : 0;
+      order = lastLesson ? lastLesson.order + 1 : 0;
     }
 
     return this.prisma.lesson.create({
       data: {
-        ...dto,
+        title: dto.title,
+        description: dto.description,
+        content: dto.content,
+        videoUrl: dto.videoUrl,
+        videoDuration: dto.videoDuration,
+        vimeoVideoId: dto.vimeoVideoId,
+        order,
         moduleId,
       },
       include: { resources: true },

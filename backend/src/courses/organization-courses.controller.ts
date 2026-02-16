@@ -16,6 +16,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { CoursesService } from './courses.service';
+import { EnrollmentsService } from '../enrollments/enrollments.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { CreateModuleDto } from './dto/create-module.dto';
@@ -30,7 +31,10 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class OrganizationCoursesController {
-  constructor(private readonly coursesService: CoursesService) {}
+  constructor(
+    private readonly coursesService: CoursesService,
+    private readonly enrollmentsService: EnrollmentsService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a course for an organization' })
@@ -254,5 +258,28 @@ export class OrganizationCoursesController {
     await this.coursesService.verifyOrganizationAccess(courseId, userId);
     await this.coursesService.deleteResource(resourceId);
     return { message: 'Resource deleted successfully' };
+  }
+
+  // Analytics endpoints
+  @Get(':courseId/analytics')
+  @ApiOperation({ summary: 'Get course analytics overview' })
+  @ApiResponse({ status: 200, description: 'Course analytics' })
+  async getCourseAnalytics(
+    @Param('courseId') courseId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    await this.coursesService.verifyOrganizationAccess(courseId, userId);
+    return this.enrollmentsService.getCourseAnalytics(courseId);
+  }
+
+  @Get(':courseId/enrollments')
+  @ApiOperation({ summary: 'Get all enrollments for a course' })
+  @ApiResponse({ status: 200, description: 'List of enrollments with progress' })
+  async getCourseEnrollments(
+    @Param('courseId') courseId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    await this.coursesService.verifyOrganizationAccess(courseId, userId);
+    return this.enrollmentsService.findCourseEnrollments(courseId);
   }
 }

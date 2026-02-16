@@ -94,12 +94,19 @@ model User {
   theme    ThemePreference @default(SYSTEM) // Light, Dark, or System
   language String          @default("en")   // Interface language (en, fr, ar, etc.)
 
+  // Privacy & Security settings
+  twoFactorEnabled      Boolean @default(false) // 2FA enabled
+  twoFactorSecret       String?                 // 2FA secret key (encrypted)
+  profileVisibility     String  @default("public") // public, private
+  showOnLeaderboard     Boolean @default(true)  // Show progress on leaderboards
+
   // Relations
   coursesCreated        Course[]               @relation("InstructorCourses")
   enrollments           Enrollment[]
   quizAttempts          QuizAttempt[]
   certificates          Certificate[]
   organizationMembers   OrganizationMember[]
+  sessions              UserSession[]
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -221,7 +228,9 @@ model Lesson {
   description   String?
   content       String?      // Rich text content for article lessons
   videoUrl      String?
-  vimeoVideoId  String?      // Vimeo video ID for embedded player
+  vimeoVideoId  String?      // Vimeo video ID for embedded player (deprecated)
+  cloudinaryPublicId String? // Cloudinary public ID for video
+  cloudinaryUrl String?      // Cloudinary video URL
   videoDuration Int?         // Duration in seconds
   order         Int
   type          LessonType   @default(VIDEO)
@@ -369,4 +378,24 @@ model Certificate {
 
   @@unique([userId, courseId])
   @@map("certificates")
+}
+
+model UserSession {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  deviceName   String?  // e.g., "Chrome on Windows"
+  deviceType   String?  // e.g., "desktop", "mobile", "tablet"
+  browser      String?  // e.g., "Chrome", "Firefox"
+  os           String?  // e.g., "Windows 11", "macOS"
+  ipAddress    String?
+  location     String?  // e.g., "New York, US"
+
+  isCurrentSession Boolean @default(false)
+  lastActiveAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  expiresAt    DateTime
+
+  @@map("user_sessions")
 }

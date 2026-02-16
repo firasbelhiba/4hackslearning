@@ -42,6 +42,16 @@ export class QuizzesController {
     return this.quizzesService.create(moduleId, dto);
   }
 
+  @Get('module/:moduleId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.INSTRUCTOR, UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get quiz by module ID (admin only)' })
+  @ApiResponse({ status: 200, description: 'Quiz found' })
+  async findByModule(@Param('moduleId') moduleId: string) {
+    return this.quizzesService.findByModuleId(moduleId);
+  }
+
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

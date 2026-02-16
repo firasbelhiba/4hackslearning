@@ -91,6 +91,33 @@ export interface AppearanceSettings {
   language: string;
 }
 
+// Privacy settings type
+export interface PrivacySettings {
+  twoFactorEnabled: boolean;
+  profileVisibility: 'public' | 'private';
+  showOnLeaderboard: boolean;
+}
+
+// Session type
+export interface UserSession {
+  id: string;
+  deviceName: string | null;
+  deviceType: string | null;
+  browser: string | null;
+  os: string | null;
+  ipAddress: string | null;
+  location: string | null;
+  isCurrentSession: boolean;
+  lastActiveAt: string;
+  createdAt: string;
+}
+
+// 2FA types
+export interface TwoFactorSetup {
+  secret: string;
+  qrCode: string;
+}
+
 // Users API
 export const usersApi = {
   getProfile: () => api.get('/users/me'),
@@ -116,6 +143,18 @@ export const usersApi = {
   getAppearanceSettings: () => api.get<AppearanceSettings>('/users/me/appearance-settings'),
   updateAppearanceSettings: (data: Partial<AppearanceSettings>) =>
     api.patch<AppearanceSettings>('/users/me/appearance-settings', data),
+  // Privacy & Security
+  getPrivacySettings: () => api.get<PrivacySettings>('/users/me/privacy-settings'),
+  updatePrivacySettings: (data: Partial<PrivacySettings>) =>
+    api.patch<PrivacySettings>('/users/me/privacy-settings', data),
+  // 2FA
+  generate2FA: () => api.post<TwoFactorSetup>('/users/me/2fa/generate'),
+  enable2FA: (code: string) => api.post('/users/me/2fa/enable', { code }),
+  disable2FA: (code: string) => api.post('/users/me/2fa/disable', { code }),
+  // Sessions
+  getSessions: () => api.get<UserSession[]>('/users/me/sessions'),
+  revokeSession: (sessionId: string) => api.delete(`/users/me/sessions/${sessionId}`),
+  revokeAllSessions: () => api.delete('/users/me/sessions'),
 };
 
 // Courses API
@@ -156,4 +195,49 @@ export const certificatesApi = {
   getAll: () => api.get('/certificates'),
   getById: (id: string) => api.get(`/certificates/${id}`),
   verify: (code: string) => api.get(`/certificates/verify/${code}`),
+};
+
+// Cloudinary signature response
+export interface CloudinarySignature {
+  signature: string;
+  timestamp: number;
+  cloudName: string;
+  apiKey: string;
+  folder: string;
+  publicId: string;
+}
+
+// Upload API
+export const uploadApi = {
+  // Image uploads
+  uploadImage: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/upload/image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  // Video uploads
+  uploadVideo: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/upload/video', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  // Cloudinary signed uploads (for large videos)
+  getCloudinaryVideoSignature: (folder?: string) =>
+    api.post<CloudinarySignature>('/upload/cloudinary/video/signature', { folder }),
+  getCloudinaryImageSignature: (folder?: string) =>
+    api.post<CloudinarySignature>('/upload/cloudinary/image/signature', { folder }),
+  // Get Cloudinary streaming URLs
+  getCloudinaryStreamingUrls: (publicId: string) =>
+    api.get<{ hls: string; dash: string; thumbnail: string; mp4: string }>(
+      `/upload/cloudinary/video/${encodeURIComponent(publicId)}/streaming`
+    ),
+  // Delete from Cloudinary
+  deleteCloudinaryFile: (publicId: string, resourceType?: 'video' | 'image' | 'raw') =>
+    api.delete(`/upload/cloudinary/${encodeURIComponent(publicId)}`, {
+      data: { resourceType },
+    }),
 };

@@ -47,8 +47,10 @@ import {
   X,
   Check,
   AlertCircle,
+  HelpCircle,
 } from 'lucide-react';
 import { VimeoUploader } from '@/components/vimeo-uploader';
+import { quizzesApi } from '@/lib/api';
 
 interface Resource {
   id: string;
@@ -74,6 +76,13 @@ interface Lesson {
   resources: Resource[];
 }
 
+interface ModuleQuiz {
+  id: string;
+  title: string;
+  passingScore: number;
+  timeLimit: number | null;
+}
+
 interface Module {
   id: string;
   title: string;
@@ -81,6 +90,7 @@ interface Module {
   order: number;
   outcomes: string[];
   lessons: Lesson[];
+  quiz?: ModuleQuiz | null;
 }
 
 interface Course {
@@ -155,6 +165,7 @@ export default function CourseDetailPage() {
   const [editingModuleTitle, setEditingModuleTitle] = useState<string | null>(null);
   const [editingLessonTitle, setEditingLessonTitle] = useState<string | null>(null);
   const [tempTitle, setTempTitle] = useState('');
+
 
   useEffect(() => {
     fetchCourse();
@@ -538,6 +549,25 @@ export default function CourseDetailPage() {
     }
   };
 
+  // Handle quiz delete
+  const handleDeleteQuiz = async (quizId: string, moduleName: string) => {
+    if (!confirm(`Are you sure you want to delete the quiz for "${moduleName}"? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await quizzesApi.delete(quizId);
+      toast({ title: 'Quiz deleted', variant: 'success' });
+      fetchCourse();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.response?.data?.message || 'Failed to delete quiz',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (!currentOrganization) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -590,6 +620,12 @@ export default function CourseDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Link href={`/dashboard/courses/${courseId}/analytics`}>
+            <Button variant="outline">
+              <Users className="h-4 w-4 mr-2" />
+              Analytics
+            </Button>
+          </Link>
           <Link href={`/dashboard/courses/${courseId}/edit`}>
             <Button variant="outline">
               <Settings className="h-4 w-4 mr-2" />
@@ -761,6 +797,51 @@ export default function CourseDetailPage() {
                       </div>
 
                       <div className="flex items-center gap-1">
+                        {module.quiz ? (
+                          <div className="flex items-center gap-1 mr-2">
+                            <Link href={`/dashboard/courses/${courseId}/modules/${module.id}/quiz`}>
+                              <Badge
+                                variant="secondary"
+                                className="text-xs flex items-center gap-1 cursor-pointer hover:bg-purple-200 transition-colors"
+                                title="Click to edit quiz"
+                              >
+                                <HelpCircle className="h-3 w-3" />
+                                Quiz
+                              </Badge>
+                            </Link>
+                            <Link href={`/dashboard/courses/${courseId}/modules/${module.id}/quiz`}>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0"
+                                title="Edit quiz"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleDeleteQuiz(module.quiz!.id, module.title)}
+                              className="h-8 w-8 p-0 hover:text-red-500"
+                              title="Delete quiz"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <Link href={`/dashboard/courses/${courseId}/modules/${module.id}/quiz`}>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 px-2"
+                              title="Add quiz to this section"
+                            >
+                              <HelpCircle className="h-4 w-4 mr-1" />
+                              Quiz
+                            </Button>
+                          </Link>
+                        )}
                         <Button
                           size="sm"
                           variant="ghost"
@@ -971,10 +1052,11 @@ export default function CourseDetailPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setModuleModalOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setModuleModalOpen(false)}>
               Cancel
             </Button>
             <Button
+              type="button"
               onClick={handleSaveModule}
               variant="primary"
               disabled={!moduleForm.title.trim() || isSaving}
@@ -1013,7 +1095,6 @@ export default function CourseDetailPage() {
                   <SelectContent>
                     <SelectItem value="VIDEO">Video</SelectItem>
                     <SelectItem value="ARTICLE">Article</SelectItem>
-                    <SelectItem value="QUIZ">Quiz</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1132,10 +1213,11 @@ export default function CourseDetailPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setLessonModalOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setLessonModalOpen(false)}>
               Cancel
             </Button>
             <Button
+              type="button"
               onClick={handleSaveLesson}
               variant="primary"
               disabled={!lessonForm.title.trim() || isSaving}
@@ -1161,15 +1243,16 @@ export default function CourseDetailPage() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setDeleteModalOpen(false)}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={isSaving}>
+            <Button type="button" variant="destructive" onClick={handleDelete} disabled={isSaving}>
               {isSaving ? 'Deleting...' : 'Delete'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
     </div>
   );
 }

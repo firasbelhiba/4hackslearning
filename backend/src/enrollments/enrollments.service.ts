@@ -248,4 +248,132 @@ export class EnrollmentsService {
 
     return !!enrollment;
   }
+
+  async findCourseEnrollments(courseId: string) {
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: { courseId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+        lessonProgress: {
+          select: {
+            lessonId: true,
+            completed: true,
+            completedAt: true,
+            watchedSeconds: true,
+          },
+        },
+      },
+      orderBy: { enrolledAt: 'desc' },
+    });
+
+    // Get certificates for all enrolled users in this course
+    const certificates = await this.prisma.certificate.findMany({
+      where: { courseId },
+      select: {
+        id: true,
+        userId: true,
+        uniqueCode: true,
+        issuedAt: true,
+        pdfUrl: true,
+      },
+    });
+
+    // Map certificates to enrollments
+    const certificateMap = new Map(
+      certificates.map((cert) => [cert.userId, cert]),
+    );
+
+    return enrollments.map((enrollment) => ({
+      ...enrollment,
+      certificate: certificateMap.get(enrollment.userId) || null,
+    }));
+  }
+
+  async getCourseAnalytics(courseId: string) {
+    // Get course with lesson count
+    const course = await this.prisma.course.findUnique({
+      where: { id: courseId },
+      include: {
+        modules: {
+          include: {
+            lessons: true,
+            quiz: true,
+          },
+        },
+      },
+    });
+
+    if (!course) {
+      throw new NotFoundException('Course not found');
+    }
+
+    const totalLessons = course.modules.reduce(
+      (acc, m) => acc + m.lessons.length,
+      0,
+    );
+    const totalQuizzes = course.modules.filter((m) => m.quiz).length;
+
+    // Get enrollment stats
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: { courseId },
+      select: {
+        id: true,
+        progress: true,
+        status: true,
+        enrolledAt: true,
+        completedAt: true,
+      },
+    });
+
+    const totalEnrollments = enrollments.length;
+    const completedCount = enrollments.filter((e) => e.status === 'COMPLETED').length;
+    const inProgressCount = enrollments.filter(
+      (e) => e.status === 'ACTIVE' && e.progress > 0,
+    ).length;
+    const notStartedCount = enrollments.filter(
+      (e) => e.status === 'ACTIVE' && e.progress === 0,
+    ).length;
+
+    // Calculate average progress
+    const avgProgress =
+      totalEnrollments > 0
+        ? enrollments.reduce((acc, e) => acc + e.progress, 0) / totalEnrollments
+        : 0;
+
+    // Get certificate count
+    const certificateCount = await this.prisma.certificate.count({
+      where: { courseId },
+    });
+
+    // Get recent enrollments (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const recentEnrollments = enrollments.filter(
+      (e) => new Date(e.enrolledAt) >= thirtyDaysAgo,
+    ).length;
+
+    // Get completion rate
+    const completionRate =
+      totalEnrollments > 0 ? (completedCount / totalEnrollments) * 100 : 0;
+
+    return {
+      totalEnrollments,
+      completedCount,
+      inProgressCount,
+      notStartedCount,
+      certificateCount,
+      avgProgress: Math.round(avgProgress * 100) / 100,
+      completionRate: Math.round(completionRate * 100) / 100,
+      recentEnrollments,
+      totalLessons,
+      totalQuizzes,
+    };
+  }
 }

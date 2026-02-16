@@ -17,8 +17,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from '@/components/ui/use-toast';
-import { ArrowLeft, Save, Plus, X, Target, Users, CheckCircle, Globe } from 'lucide-react';
+import { ArrowLeft, Save, Plus, X, Target, Users, CheckCircle, Globe, Video, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+import { VimeoUploader } from '@/components/vimeo-uploader';
 
 export default function NewCoursePage() {
   const router = useRouter();
@@ -263,26 +264,83 @@ export default function NewCoursePage() {
             <CardTitle className="text-xl text-black">Media</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="thumbnail">Thumbnail URL</Label>
-                <Input
-                  id="thumbnail"
-                  value={formData.thumbnail}
-                  onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
-                  placeholder="https://example.com/image.jpg"
-                />
-              </div>
+            {/* Thumbnail */}
+            <div className="space-y-2">
+              <Label htmlFor="thumbnail">Thumbnail URL</Label>
+              <Input
+                id="thumbnail"
+                value={formData.thumbnail}
+                onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
+                placeholder="https://example.com/image.jpg"
+              />
+              {formData.thumbnail && (
+                <div className="mt-2">
+                  <img
+                    src={formData.thumbnail}
+                    alt="Course thumbnail"
+                    className="w-48 h-28 object-cover rounded-lg border-2 border-black"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                </div>
+              )}
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="promoVideoUrl">Promotional Video URL</Label>
-                <Input
-                  id="promoVideoUrl"
-                  value={formData.promoVideoUrl}
-                  onChange={(e) => setFormData({ ...formData, promoVideoUrl: e.target.value })}
-                  placeholder="https://vimeo.com/... or YouTube URL"
-                />
-              </div>
+            {/* Promotional Video */}
+            <div className="space-y-3">
+              <Label className="flex items-center gap-2">
+                <Video className="h-4 w-4 text-brand" />
+                Promotional Video
+              </Label>
+              <p className="text-sm text-gray-500">
+                Upload a preview video that will be shown on the course landing page
+              </p>
+
+              {formData.promoVideoUrl ? (
+                <div className="space-y-3">
+                  {/* Video Preview */}
+                  <div className="relative aspect-video w-full max-w-md rounded-lg overflow-hidden border-2 border-black">
+                    <iframe
+                      src={formData.promoVideoUrl}
+                      className="absolute inset-0 w-full h-full"
+                      allow="autoplay; fullscreen; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setFormData({ ...formData, promoVideoUrl: '' })}
+                      className="text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Remove Video
+                    </Button>
+                    <span className="text-sm text-gray-500">or upload a new one to replace it</span>
+                  </div>
+                </div>
+              ) : null}
+
+              <VimeoUploader
+                onUploadComplete={(videoData) => {
+                  setFormData({ ...formData, promoVideoUrl: videoData.embedUrl });
+                  toast({
+                    title: 'Video uploaded',
+                    description: 'Your promotional video has been uploaded successfully.',
+                    variant: 'success',
+                  });
+                }}
+                onError={(error) => {
+                  toast({
+                    title: 'Upload failed',
+                    description: error,
+                    variant: 'destructive',
+                  });
+                }}
+              />
             </div>
           </CardContent>
         </Card>

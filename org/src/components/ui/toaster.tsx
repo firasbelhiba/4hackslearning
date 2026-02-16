@@ -9,20 +9,33 @@ import {
   ToastViewport,
 } from '@/components/ui/toast';
 import { useToast } from '@/components/ui/use-toast';
+import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+
+const variantIcons = {
+  default: AlertCircle,
+  success: CheckCircle,
+  destructive: XCircle,
+};
 
 export function Toaster() {
   const { toasts } = useToast();
 
   return (
     <ToastProvider>
-      {toasts.map(function ({ id, title, description, action, ...props }) {
+      {toasts.map(function ({ id, title, description, action, variant, ...props }) {
+        const Icon = variantIcons[variant || 'default'];
         return (
-          <Toast key={id} {...props}>
-            <div className="grid gap-1">
-              {title && <ToastTitle>{title}</ToastTitle>}
-              {description && (
-                <ToastDescription>{description}</ToastDescription>
-              )}
+          <Toast key={id} variant={variant} {...props}>
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 mt-0.5">
+                <Icon className="h-5 w-5" />
+              </div>
+              <div className="grid gap-1">
+                {title && <ToastTitle>{title}</ToastTitle>}
+                {description && (
+                  <ToastDescription>{description}</ToastDescription>
+                )}
+              </div>
             </div>
             {action}
             <ToastClose />

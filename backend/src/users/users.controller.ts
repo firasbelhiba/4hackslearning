@@ -28,6 +28,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { UpdateNotificationsDto } from './dto/update-notifications.dto';
 import { UpdateCertificateSettingsDto } from './dto/update-certificate-settings.dto';
 import { UpdateAppearanceSettingsDto } from './dto/update-appearance-settings.dto';
+import { UpdatePrivacySettingsDto, Enable2FADto, Disable2FADto } from './dto/update-privacy-settings.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -222,6 +223,93 @@ export class UsersController {
     @Body() dto: UpdateAppearanceSettingsDto,
   ) {
     return this.usersService.updateAppearanceSettings(userId, dto);
+  }
+
+  // Privacy & Security Settings
+  @Get('me/privacy-settings')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get privacy settings' })
+  @ApiResponse({ status: 200, description: 'Privacy settings' })
+  async getPrivacySettings(@CurrentUser('id') userId: string) {
+    return this.usersService.getPrivacySettings(userId);
+  }
+
+  @Patch('me/privacy-settings')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update privacy settings' })
+  @ApiResponse({ status: 200, description: 'Privacy settings updated' })
+  async updatePrivacySettings(
+    @CurrentUser('id') userId: string,
+    @Body() dto: UpdatePrivacySettingsDto,
+  ) {
+    return this.usersService.updatePrivacySettings(userId, dto);
+  }
+
+  // 2FA Endpoints
+  @Post('me/2fa/generate')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Generate 2FA secret and QR code' })
+  @ApiResponse({ status: 200, description: '2FA secret and QR code generated' })
+  async generate2FA(@CurrentUser('id') userId: string) {
+    return this.usersService.generate2FASecret(userId);
+  }
+
+  @Post('me/2fa/enable')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Enable 2FA' })
+  @ApiResponse({ status: 200, description: '2FA enabled' })
+  async enable2FA(
+    @CurrentUser('id') userId: string,
+    @Body() dto: Enable2FADto,
+  ) {
+    return this.usersService.enable2FA(userId, dto.code);
+  }
+
+  @Post('me/2fa/disable')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Disable 2FA' })
+  @ApiResponse({ status: 200, description: '2FA disabled' })
+  async disable2FA(
+    @CurrentUser('id') userId: string,
+    @Body() dto: Disable2FADto,
+  ) {
+    return this.usersService.disable2FA(userId, dto.code);
+  }
+
+  // Session Management
+  @Get('me/sessions')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all active sessions' })
+  @ApiResponse({ status: 200, description: 'List of active sessions' })
+  async getSessions(@CurrentUser('id') userId: string) {
+    return this.usersService.getSessions(userId);
+  }
+
+  @Delete('me/sessions/:sessionId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Revoke a specific session' })
+  @ApiResponse({ status: 200, description: 'Session revoked' })
+  async revokeSession(
+    @CurrentUser('id') userId: string,
+    @Param('sessionId') sessionId: string,
+  ) {
+    return this.usersService.revokeSession(userId, sessionId);
+  }
+
+  @Delete('me/sessions')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Revoke all other sessions' })
+  @ApiResponse({ status: 200, description: 'All other sessions revoked' })
+  async revokeAllSessions(@CurrentUser('id') userId: string) {
+    return this.usersService.revokeAllOtherSessions(userId);
   }
 
   @Get(':id')

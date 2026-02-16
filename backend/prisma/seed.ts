@@ -457,7 +457,9 @@ Hedera Hashgraph is a decentralized public network that utilizes the hashgraph c
 - **Security**: Asynchronous Byzantine Fault Tolerant
 - **Fairness**: Fair ordering of transactions
 - **Low Fees**: Predictable, low transaction costs`,
-          videoUrl: 'https://example.com/videos/hedera-intro.mp4',
+          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+          isFreePreview: true,
+          status: 'PUBLISHED',
           videoDuration: 600,
           order: 1,
           moduleId: module1.id,
@@ -482,7 +484,8 @@ In this lesson, we'll set up everything you need to start building on Hedera.
 \`\`\`bash
 npm install @hashgraph/sdk
 \`\`\``,
-          videoUrl: 'https://example.com/videos/hedera-setup.mp4',
+          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+          status: 'PUBLISHED',
           videoDuration: 480,
           order: 2,
           moduleId: module1.id,
@@ -514,7 +517,8 @@ contract HelloHedera {
     }
 }
 \`\`\``,
-          videoUrl: 'https://example.com/videos/hedera-smart-contract.mp4',
+          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
+          status: 'PUBLISHED',
           videoDuration: 900,
           order: 1,
           moduleId: module2.id,

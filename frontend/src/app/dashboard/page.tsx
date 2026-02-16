@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { BookOpen, Award, Clock, ChevronRight, Play } from 'lucide-react';
+import { BookOpen, Award, Clock, ChevronRight, Play, Settings } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
@@ -87,11 +87,19 @@ export default function DashboardPage() {
       <main className="flex-1 py-8">
         <div className="container mx-auto px-4">
           {/* Welcome Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2 font-display">
-              Welcome back, {user?.name?.split(' ')[0] || 'Learner'}!
-            </h1>
-            <p className="text-gray-600">Continue your learning journey</p>
+          <div className="mb-8 flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl font-bold mb-2 font-display">
+                Welcome back, {user?.name?.split(' ')[0] || 'Learner'}!
+              </h1>
+              <p className="text-gray-600">Continue your learning journey</p>
+            </div>
+            <Link href="/dashboard/settings">
+              <Button variant="outline" size="sm">
+                <Settings className="w-4 h-4 mr-2" />
+                Settings
+              </Button>
+            </Link>
           </div>
 
           {/* Stats Grid */}

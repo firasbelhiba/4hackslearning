@@ -181,18 +181,12 @@ export default function CoursesPage() {
             <Card key={course.id} className="group hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
               <CardContent className="p-0">
                 {/* Thumbnail */}
-                <div className="relative h-40 bg-gray-100 rounded-t-lg overflow-hidden border-b-2 border-black">
-                  {course.thumbnail ? (
-                    <img
-                      src={course.thumbnail}
-                      alt={course.title}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <BookOpen className="h-12 w-12 text-gray-400" />
+                <div className="relative h-40 bg-gradient-to-br from-brand/30 to-brand/10 rounded-t-lg overflow-hidden border-b-2 border-black">
+                  <div className="flex items-center justify-center h-full">
+                    <div className="p-4 bg-white/80 rounded-xl border-2 border-black shadow-brutal-sm">
+                      <BookOpen className="h-10 w-10 text-black" />
                     </div>
-                  )}
+                  </div>
                   {/* Actions overlay */}
                   <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                     <Link href={`/dashboard/courses/${course.id}`}>

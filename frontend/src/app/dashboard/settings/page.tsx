@@ -21,13 +21,23 @@ import {
   Moon,
   Monitor,
   Globe,
+  Shield,
+  Smartphone,
+  Eye,
+  EyeOff,
+  Trophy,
+  LogOut,
+  Trash2,
+  Monitor as MonitorIcon,
+  Laptop,
+  Tablet,
 } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuthStore } from '@/store/auth';
-import { usersApi, NotificationPreferences, CertificateSettings, AppearanceSettings, ThemePreference } from '@/lib/api';
+import { usersApi, NotificationPreferences, CertificateSettings, AppearanceSettings, ThemePreference, PrivacySettings, UserSession, TwoFactorSetup } from '@/lib/api';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -86,8 +96,29 @@ export default function SettingsPage() {
   const [appearanceSuccess, setAppearanceSuccess] = useState(false);
   const [appearanceError, setAppearanceError] = useState('');
 
+  // Privacy & Security settings state
+  const [privacySettings, setPrivacySettings] = useState<PrivacySettings>({
+    twoFactorEnabled: false,
+    profileVisibility: 'public',
+    showOnLeaderboard: true,
+  });
+  const [privacyLoading, setPrivacyLoading] = useState(false);
+  const [privacySaving, setPrivacySaving] = useState(false);
+  const [privacySuccess, setPrivacySuccess] = useState(false);
+  const [privacyError, setPrivacyError] = useState('');
+
+  // Sessions state
+  const [sessions, setSessions] = useState<UserSession[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
+
+  // 2FA state
+  const [twoFactorSetup, setTwoFactorSetup] = useState<TwoFactorSetup | null>(null);
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [twoFactorLoading, setTwoFactorLoading] = useState(false);
+  const [showDisable2FA, setShowDisable2FA] = useState(false);
+
   // Active tab
-  const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'notifications' | 'certificates' | 'appearance'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'notifications' | 'certificates' | 'appearance' | 'privacy'>('profile');
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -154,6 +185,40 @@ export default function SettingsPage() {
       }
     };
     fetchAppearanceSettings();
+  }, [isAuthenticated]);
+
+  // Fetch privacy settings
+  useEffect(() => {
+    const fetchPrivacySettings = async () => {
+      if (!isAuthenticated) return;
+      setPrivacyLoading(true);
+      try {
+        const response = await usersApi.getPrivacySettings();
+        setPrivacySettings(response.data);
+      } catch (error) {
+        console.error('Failed to fetch privacy settings:', error);
+      } finally {
+        setPrivacyLoading(false);
+      }
+    };
+    fetchPrivacySettings();
+  }, [isAuthenticated]);
+
+  // Fetch sessions
+  useEffect(() => {
+    const fetchSessions = async () => {
+      if (!isAuthenticated) return;
+      setSessionsLoading(true);
+      try {
+        const response = await usersApi.getSessions();
+        setSessions(response.data);
+      } catch (error) {
+        console.error('Failed to fetch sessions:', error);
+      } finally {
+        setSessionsLoading(false);
+      }
+    };
+    fetchSessions();
   }, [isAuthenticated]);
 
   // Apply theme to document
@@ -341,6 +406,124 @@ export default function SettingsPage() {
     }
   };
 
+  // Privacy Settings Handlers
+  const handlePrivacyChange = async (key: 'profileVisibility' | 'showOnLeaderboard', value: any) => {
+    const previousValue = privacySettings[key];
+    setPrivacySettings({ ...privacySettings, [key]: value });
+    setPrivacySaving(true);
+    setPrivacyError('');
+    setPrivacySuccess(false);
+
+    try {
+      await usersApi.updatePrivacySettings({ [key]: value });
+      setPrivacySuccess(true);
+      setTimeout(() => setPrivacySuccess(false), 2000);
+    } catch (error: any) {
+      setPrivacySettings({ ...privacySettings, [key]: previousValue });
+      setPrivacyError(error.response?.data?.message || 'Failed to update privacy settings');
+    } finally {
+      setPrivacySaving(false);
+    }
+  };
+
+  // 2FA Handlers
+  const handleGenerate2FA = async () => {
+    setTwoFactorLoading(true);
+    setPrivacyError('');
+    try {
+      const response = await usersApi.generate2FA();
+      setTwoFactorSetup(response.data);
+    } catch (error: any) {
+      setPrivacyError(error.response?.data?.message || 'Failed to generate 2FA');
+    } finally {
+      setTwoFactorLoading(false);
+    }
+  };
+
+  const handleEnable2FA = async () => {
+    if (!twoFactorCode || twoFactorCode.length !== 6) {
+      setPrivacyError('Please enter a valid 6-digit code');
+      return;
+    }
+    setTwoFactorLoading(true);
+    setPrivacyError('');
+    try {
+      await usersApi.enable2FA(twoFactorCode);
+      setPrivacySettings({ ...privacySettings, twoFactorEnabled: true });
+      setTwoFactorSetup(null);
+      setTwoFactorCode('');
+      setPrivacySuccess(true);
+      setTimeout(() => setPrivacySuccess(false), 2000);
+    } catch (error: any) {
+      setPrivacyError(error.response?.data?.message || 'Failed to enable 2FA');
+    } finally {
+      setTwoFactorLoading(false);
+    }
+  };
+
+  const handleDisable2FA = async () => {
+    if (!twoFactorCode || twoFactorCode.length !== 6) {
+      setPrivacyError('Please enter a valid 6-digit code');
+      return;
+    }
+    setTwoFactorLoading(true);
+    setPrivacyError('');
+    try {
+      await usersApi.disable2FA(twoFactorCode);
+      setPrivacySettings({ ...privacySettings, twoFactorEnabled: false });
+      setShowDisable2FA(false);
+      setTwoFactorCode('');
+      setPrivacySuccess(true);
+      setTimeout(() => setPrivacySuccess(false), 2000);
+    } catch (error: any) {
+      setPrivacyError(error.response?.data?.message || 'Failed to disable 2FA');
+    } finally {
+      setTwoFactorLoading(false);
+    }
+  };
+
+  // Session Handlers
+  const handleRevokeSession = async (sessionId: string) => {
+    try {
+      await usersApi.revokeSession(sessionId);
+      setSessions(sessions.filter(s => s.id !== sessionId));
+    } catch (error: any) {
+      setPrivacyError(error.response?.data?.message || 'Failed to revoke session');
+    }
+  };
+
+  const handleRevokeAllSessions = async () => {
+    try {
+      await usersApi.revokeAllSessions();
+      setSessions(sessions.filter(s => s.isCurrentSession));
+    } catch (error: any) {
+      setPrivacyError(error.response?.data?.message || 'Failed to revoke sessions');
+    }
+  };
+
+  const getDeviceIcon = (deviceType: string | null) => {
+    switch (deviceType?.toLowerCase()) {
+      case 'mobile':
+        return <Smartphone className="w-5 h-5" />;
+      case 'tablet':
+        return <Tablet className="w-5 h-5" />;
+      case 'desktop':
+        return <Laptop className="w-5 h-5" />;
+      default:
+        return <MonitorIcon className="w-5 h-5" />;
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordLoading(true);
@@ -458,6 +641,17 @@ export default function SettingsPage() {
                   >
                     <Palette className="w-5 h-5" />
                     Appearance
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('privacy')}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                      activeTab === 'privacy'
+                        ? 'bg-brand text-black font-medium'
+                        : 'hover:bg-gray-100'
+                    }`}
+                  >
+                    <Shield className="w-5 h-5" />
+                    Privacy & Security
                   </button>
                 </nav>
               </CardContent>
@@ -759,16 +953,16 @@ export default function SettingsPage() {
                           type="button"
                           onClick={() => handleNotificationChange('emailCourseUpdates')}
                           disabled={notificationsSaving}
-                          className={`relative w-12 h-6 rounded-full transition-colors ${
+                          className={`relative w-14 h-7 rounded-full transition-colors flex-shrink-0 ${
                             notifications.emailCourseUpdates
-                              ? 'bg-brand border-2 border-black'
-                              : 'bg-gray-200 border-2 border-gray-300'
+                              ? 'bg-brand'
+                              : 'bg-gray-300'
                           }`}
                         >
                           <span
-                            className={`absolute top-0.5 w-4 h-4 bg-white border border-black rounded-full transition-transform ${
+                            className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
                               notifications.emailCourseUpdates
-                                ? 'translate-x-6'
+                                ? 'translate-x-8'
                                 : 'translate-x-1'
                             }`}
                           />
@@ -787,16 +981,16 @@ export default function SettingsPage() {
                           type="button"
                           onClick={() => handleNotificationChange('emailNewCourses')}
                           disabled={notificationsSaving}
-                          className={`relative w-12 h-6 rounded-full transition-colors ${
+                          className={`relative w-14 h-7 rounded-full transition-colors flex-shrink-0 ${
                             notifications.emailNewCourses
-                              ? 'bg-brand border-2 border-black'
-                              : 'bg-gray-200 border-2 border-gray-300'
+                              ? 'bg-brand'
+                              : 'bg-gray-300'
                           }`}
                         >
                           <span
-                            className={`absolute top-0.5 w-4 h-4 bg-white border border-black rounded-full transition-transform ${
+                            className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
                               notifications.emailNewCourses
-                                ? 'translate-x-6'
+                                ? 'translate-x-8'
                                 : 'translate-x-1'
                             }`}
                           />
@@ -815,16 +1009,16 @@ export default function SettingsPage() {
                           type="button"
                           onClick={() => handleNotificationChange('emailCompletionReminders')}
                           disabled={notificationsSaving}
-                          className={`relative w-12 h-6 rounded-full transition-colors ${
+                          className={`relative w-14 h-7 rounded-full transition-colors flex-shrink-0 ${
                             notifications.emailCompletionReminders
-                              ? 'bg-brand border-2 border-black'
-                              : 'bg-gray-200 border-2 border-gray-300'
+                              ? 'bg-brand'
+                              : 'bg-gray-300'
                           }`}
                         >
                           <span
-                            className={`absolute top-0.5 w-4 h-4 bg-white border border-black rounded-full transition-transform ${
+                            className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
                               notifications.emailCompletionReminders
-                                ? 'translate-x-6'
+                                ? 'translate-x-8'
                                 : 'translate-x-1'
                             }`}
                           />
@@ -843,16 +1037,16 @@ export default function SettingsPage() {
                           type="button"
                           onClick={() => handleNotificationChange('emailCertificates')}
                           disabled={notificationsSaving}
-                          className={`relative w-12 h-6 rounded-full transition-colors ${
+                          className={`relative w-14 h-7 rounded-full transition-colors flex-shrink-0 ${
                             notifications.emailCertificates
-                              ? 'bg-brand border-2 border-black'
-                              : 'bg-gray-200 border-2 border-gray-300'
+                              ? 'bg-brand'
+                              : 'bg-gray-300'
                           }`}
                         >
                           <span
-                            className={`absolute top-0.5 w-4 h-4 bg-white border border-black rounded-full transition-transform ${
+                            className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
                               notifications.emailCertificates
-                                ? 'translate-x-6'
+                                ? 'translate-x-8'
                                 : 'translate-x-1'
                             }`}
                           />
@@ -871,16 +1065,16 @@ export default function SettingsPage() {
                           type="button"
                           onClick={() => handleNotificationChange('emailMarketing')}
                           disabled={notificationsSaving}
-                          className={`relative w-12 h-6 rounded-full transition-colors ${
+                          className={`relative w-14 h-7 rounded-full transition-colors flex-shrink-0 ${
                             notifications.emailMarketing
-                              ? 'bg-brand border-2 border-black'
-                              : 'bg-gray-200 border-2 border-gray-300'
+                              ? 'bg-brand'
+                              : 'bg-gray-300'
                           }`}
                         >
                           <span
-                            className={`absolute top-0.5 w-4 h-4 bg-white border border-black rounded-full transition-transform ${
+                            className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
                               notifications.emailMarketing
-                                ? 'translate-x-6'
+                                ? 'translate-x-8'
                                 : 'translate-x-1'
                             }`}
                           />
@@ -973,16 +1167,16 @@ export default function SettingsPage() {
                           type="button"
                           onClick={handleLinkedinToggle}
                           disabled={certificateSaving}
-                          className={`relative w-12 h-6 rounded-full transition-colors ${
+                          className={`relative w-14 h-7 rounded-full transition-colors flex-shrink-0 ${
                             certificateSettings.linkedinAutoShare
-                              ? 'bg-brand border-2 border-black'
-                              : 'bg-gray-200 border-2 border-gray-300'
+                              ? 'bg-brand'
+                              : 'bg-gray-300'
                           }`}
                         >
                           <span
-                            className={`absolute top-0.5 w-4 h-4 bg-white border border-black rounded-full transition-transform ${
+                            className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
                               certificateSettings.linkedinAutoShare
-                                ? 'translate-x-6'
+                                ? 'translate-x-8'
                                 : 'translate-x-1'
                             }`}
                           />
@@ -1111,6 +1305,346 @@ export default function SettingsPage() {
                   )}
                 </CardContent>
               </Card>
+            )}
+
+            {activeTab === 'privacy' && (
+              <div className="space-y-6">
+                {/* Two-Factor Authentication */}
+                <Card>
+                  <CardContent className="p-6">
+                    <h2 className="text-xl font-bold mb-2">Two-Factor Authentication</h2>
+                    <p className="text-gray-600 mb-6">
+                      Add an extra layer of security to your account.
+                    </p>
+
+                    {privacyLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {!privacySettings.twoFactorEnabled && !twoFactorSetup && (
+                          <div className="flex items-center justify-between p-4 border-2 border-gray-200 rounded-lg">
+                            <div className="flex items-start gap-3">
+                              <Shield className="w-5 h-5 mt-0.5 text-gray-600" />
+                              <div>
+                                <h3 className="font-medium">Enable 2FA</h3>
+                                <p className="text-sm text-gray-600">
+                                  Use an authenticator app to generate verification codes
+                                </p>
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="primary"
+                              onClick={handleGenerate2FA}
+                              disabled={twoFactorLoading}
+                            >
+                              {twoFactorLoading ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                'Set Up'
+                              )}
+                            </Button>
+                          </div>
+                        )}
+
+                        {twoFactorSetup && !privacySettings.twoFactorEnabled && (
+                          <div className="p-4 border-2 border-black rounded-lg bg-gray-50">
+                            <h3 className="font-medium mb-4">Set Up Authenticator App</h3>
+                            <div className="space-y-4">
+                              <div className="flex flex-col items-center gap-4">
+                                <p className="text-sm text-gray-600 text-center">
+                                  Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.)
+                                </p>
+                                <img
+                                  src={twoFactorSetup.qrCode}
+                                  alt="2FA QR Code"
+                                  className="w-48 h-48 border-2 border-black rounded-lg"
+                                />
+                                <div className="text-center">
+                                  <p className="text-xs text-gray-500 mb-1">Or enter this code manually:</p>
+                                  <code className="px-3 py-1 bg-white border border-gray-300 rounded font-mono text-sm">
+                                    {twoFactorSetup.secret}
+                                  </code>
+                                </div>
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium mb-2">
+                                  Enter the 6-digit code from your app
+                                </label>
+                                <div className="flex gap-2">
+                                  <input
+                                    type="text"
+                                    value={twoFactorCode}
+                                    onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                    placeholder="000000"
+                                    maxLength={6}
+                                    className="flex-1 px-4 py-3 border-2 border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-brand text-center font-mono text-lg tracking-widest"
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="primary"
+                                    onClick={handleEnable2FA}
+                                    disabled={twoFactorLoading || twoFactorCode.length !== 6}
+                                  >
+                                    {twoFactorLoading ? (
+                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                      'Verify'
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                  setTwoFactorSetup(null);
+                                  setTwoFactorCode('');
+                                }}
+                                className="w-full"
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+
+                        {privacySettings.twoFactorEnabled && !showDisable2FA && (
+                          <div className="flex items-center justify-between p-4 border-2 border-green-200 rounded-lg bg-green-50">
+                            <div className="flex items-start gap-3">
+                              <CheckCircle className="w-5 h-5 mt-0.5 text-green-600" />
+                              <div>
+                                <h3 className="font-medium text-green-800">2FA is Enabled</h3>
+                                <p className="text-sm text-green-600">
+                                  Your account is protected with two-factor authentication
+                                </p>
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setShowDisable2FA(true)}
+                            >
+                              Disable
+                            </Button>
+                          </div>
+                        )}
+
+                        {showDisable2FA && (
+                          <div className="p-4 border-2 border-red-200 rounded-lg bg-red-50">
+                            <h3 className="font-medium text-red-800 mb-4">Disable Two-Factor Authentication</h3>
+                            <p className="text-sm text-red-600 mb-4">
+                              Enter your authenticator code to disable 2FA. This will make your account less secure.
+                            </p>
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={twoFactorCode}
+                                onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                placeholder="000000"
+                                maxLength={6}
+                                className="flex-1 px-4 py-3 border-2 border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-brand text-center font-mono text-lg tracking-widest"
+                              />
+                              <Button
+                                type="button"
+                                variant="primary"
+                                onClick={handleDisable2FA}
+                                disabled={twoFactorLoading || twoFactorCode.length !== 6}
+                                className="bg-red-500 hover:bg-red-600 border-red-600"
+                              >
+                                {twoFactorLoading ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  'Disable'
+                                )}
+                              </Button>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => {
+                                setShowDisable2FA(false);
+                                setTwoFactorCode('');
+                              }}
+                              className="w-full mt-3"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Active Sessions */}
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <div>
+                        <h2 className="text-xl font-bold">Active Sessions</h2>
+                        <p className="text-gray-600">
+                          Manage devices where you're logged in.
+                        </p>
+                      </div>
+                      {sessions.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleRevokeAllSessions}
+                          className="text-red-600 border-red-200 hover:bg-red-50"
+                        >
+                          <LogOut className="w-4 h-4 mr-2" />
+                          Sign Out All
+                        </Button>
+                      )}
+                    </div>
+
+                    {sessionsLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                      </div>
+                    ) : sessions.length === 0 ? (
+                      <p className="text-gray-500 text-center py-8">No active sessions found.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {sessions.map((session) => (
+                          <div
+                            key={session.id}
+                            className={`flex items-center justify-between p-4 border-2 rounded-lg ${
+                              session.isCurrentSession
+                                ? 'border-green-500 bg-green-50'
+                                : 'border-gray-200'
+                            }`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="p-2 bg-gray-100 rounded-lg">
+                                {getDeviceIcon(session.deviceType)}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <h3 className="font-medium">
+                                    {session.browser || 'Unknown Browser'} on {session.os || 'Unknown OS'}
+                                  </h3>
+                                  {session.isCurrentSession && (
+                                    <span className="px-2 py-0.5 bg-green-500 text-white text-xs font-medium rounded">
+                                      Current
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-sm text-gray-600">
+                                  {session.location || 'Unknown location'} • {session.ipAddress || 'Unknown IP'}
+                                </p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Last active: {formatDate(session.lastActiveAt)}
+                                </p>
+                              </div>
+                            </div>
+                            {!session.isCurrentSession && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleRevokeSession(session.id)}
+                                className="text-red-600 border-red-200 hover:bg-red-50"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Privacy Settings */}
+                <Card>
+                  <CardContent className="p-6">
+                    <h2 className="text-xl font-bold mb-2">Privacy Settings</h2>
+                    <p className="text-gray-600 mb-6">
+                      Control who can see your information.
+                    </p>
+
+                    <div className="space-y-4">
+                      {/* Profile Visibility */}
+                      <div className="flex items-center justify-between p-4 border-2 border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
+                        <div className="flex items-start gap-3">
+                          {privacySettings.profileVisibility === 'public' ? (
+                            <Eye className="w-5 h-5 mt-0.5 text-gray-600" />
+                          ) : (
+                            <EyeOff className="w-5 h-5 mt-0.5 text-gray-600" />
+                          )}
+                          <div>
+                            <h3 className="font-medium">Profile Visibility</h3>
+                            <p className="text-sm text-gray-600">
+                              {privacySettings.profileVisibility === 'public'
+                                ? 'Your profile is visible to everyone'
+                                : 'Only you can see your profile'}
+                            </p>
+                          </div>
+                        </div>
+                        <select
+                          value={privacySettings.profileVisibility}
+                          onChange={(e) => handlePrivacyChange('profileVisibility', e.target.value)}
+                          disabled={privacySaving}
+                          className="px-4 py-2 border-2 border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-brand bg-white"
+                        >
+                          <option value="public">Public</option>
+                          <option value="private">Private</option>
+                        </select>
+                      </div>
+
+                      {/* Show on Leaderboard */}
+                      <div className="flex items-center justify-between p-4 border-2 border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
+                        <div className="flex items-start gap-3">
+                          <Trophy className="w-5 h-5 mt-0.5 text-gray-600" />
+                          <div>
+                            <h3 className="font-medium">Show on Leaderboard</h3>
+                            <p className="text-sm text-gray-600">
+                              Display your progress on public leaderboards
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handlePrivacyChange('showOnLeaderboard', !privacySettings.showOnLeaderboard)}
+                          disabled={privacySaving}
+                          className={`relative w-14 h-7 rounded-full transition-colors flex-shrink-0 ${
+                            privacySettings.showOnLeaderboard
+                              ? 'bg-brand'
+                              : 'bg-gray-300'
+                          }`}
+                        >
+                          <span
+                            className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
+                              privacySettings.showOnLeaderboard
+                                ? 'translate-x-8'
+                                : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                      </div>
+
+                      {/* Success/Error Messages */}
+                      {privacySuccess && (
+                        <div className="flex items-center gap-2 p-3 bg-green-100 text-green-700 rounded-lg">
+                          <CheckCircle className="w-5 h-5" />
+                          Privacy settings updated!
+                        </div>
+                      )}
+                      {privacyError && (
+                        <div className="flex items-center gap-2 p-3 bg-red-100 text-red-700 rounded-lg">
+                          <AlertCircle className="w-5 h-5" />
+                          {privacyError}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             )}
           </div>
         </div>

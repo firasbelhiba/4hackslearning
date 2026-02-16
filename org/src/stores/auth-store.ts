@@ -2,6 +2,11 @@ import { create } from 'zustand';
 import Cookies from 'js-cookie';
 import { authApi } from '@/lib/api';
 
+// Cookie names for org portal (different from frontend to avoid conflicts)
+const ACCESS_TOKEN_KEY = 'org_accessToken';
+const REFRESH_TOKEN_KEY = 'org_refreshToken';
+const CURRENT_ORG_KEY = 'org_currentOrgId';
+
 interface User {
   id: string;
   email: string;
@@ -47,7 +52,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     // Prevent multiple initializations
     if (get().isInitialized) return;
 
-    const accessToken = Cookies.get('accessToken');
+    const accessToken = Cookies.get(ACCESS_TOKEN_KEY);
 
     if (!accessToken) {
       set({ isLoading: false, isInitialized: true });
@@ -58,8 +63,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await get().fetchProfile();
     } catch (error) {
       // Token invalid or expired
-      Cookies.remove('accessToken');
-      Cookies.remove('refreshToken');
+      Cookies.remove(ACCESS_TOKEN_KEY);
+      Cookies.remove(REFRESH_TOKEN_KEY);
       set({ isLoading: false, isInitialized: true });
     }
 
@@ -67,20 +72,27 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   login: async (email: string, password: string) => {
-    const response = await authApi.login({ email, password });
-    const { accessToken, refreshToken, user } = response.data;
+    set({ isLoading: true });
+    try {
+      const response = await authApi.login({ email, password });
+      const { user, tokens } = response.data;
+      const { accessToken, refreshToken } = tokens;
 
-    Cookies.set('accessToken', accessToken, { expires: 1 / 96 });
-    Cookies.set('refreshToken', refreshToken, { expires: 7 });
+      Cookies.set(ACCESS_TOKEN_KEY, accessToken, { expires: 1 / 96, path: '/' });
+      Cookies.set(REFRESH_TOKEN_KEY, refreshToken, { expires: 7, path: '/' });
 
-    set({ user, isAuthenticated: true });
-    await get().fetchProfile();
+      set({ user, isAuthenticated: true });
+      await get().fetchProfile();
+    } catch (error) {
+      set({ isLoading: false });
+      throw error;
+    }
   },
 
   logout: () => {
-    Cookies.remove('accessToken');
-    Cookies.remove('refreshToken');
-    Cookies.remove('currentOrgId');
+    Cookies.remove(ACCESS_TOKEN_KEY);
+    Cookies.remove(REFRESH_TOKEN_KEY);
+    Cookies.remove(CURRENT_ORG_KEY);
     set({
       user: null,
       organizations: [],
@@ -101,11 +113,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const organizations = orgsRes.data;
 
       // Get saved org from cookie or use first org
-      const savedOrgId = Cookies.get('currentOrgId');
+      const savedOrgId = Cookies.get(CURRENT_ORG_KEY);
       let currentOrganization = organizations.find((o: Organization) => o.id === savedOrgId);
       if (!currentOrganization && organizations.length > 0) {
         currentOrganization = organizations[0];
-        Cookies.set('currentOrgId', currentOrganization.id, { expires: 30 });
+        Cookies.set(CURRENT_ORG_KEY, currentOrganization.id, { expires: 30 });
       }
 
       set({
@@ -127,11 +139,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const orgsRes = await organizationsApi.getMyOrganizations();
       const organizations = orgsRes.data;
 
-      const savedOrgId = Cookies.get('currentOrgId');
+      const savedOrgId = Cookies.get(CURRENT_ORG_KEY);
       let currentOrganization = organizations.find((o: Organization) => o.id === savedOrgId);
       if (!currentOrganization && organizations.length > 0) {
         currentOrganization = organizations[0];
-        Cookies.set('currentOrgId', currentOrganization.id, { expires: 30 });
+        Cookies.set(CURRENT_ORG_KEY, currentOrganization.id, { expires: 30 });
       }
 
       set({ organizations, currentOrganization });
@@ -141,7 +153,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   setCurrentOrganization: (org: Organization) => {
-    Cookies.set('currentOrgId', org.id, { expires: 30 });
+    Cookies.set(CURRENT_ORG_KEY, org.id, { expires: 30 });
     set({ currentOrganization: org });
   },
 }));

@@ -1,7 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { User, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import * as speakeasy from 'speakeasy';
+import * as QRCode from 'qrcode';
 
 @Injectable()
 export class UsersService {
@@ -263,5 +265,209 @@ export class UsersService {
         language: true,
       },
     });
+  }
+
+  // Privacy & Security Settings
+  async getPrivacySettings(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        twoFactorEnabled: true,
+        profileVisibility: true,
+        showOnLeaderboard: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
+  async updatePrivacySettings(
+    userId: string,
+    data: {
+      profileVisibility?: string;
+      showOnLeaderboard?: boolean;
+    },
+  ) {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data,
+      select: {
+        profileVisibility: true,
+        showOnLeaderboard: true,
+      },
+    });
+  }
+
+  // 2FA Methods
+  async generate2FASecret(userId: string) {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.twoFactorEnabled) {
+      throw new BadRequestException('2FA is already enabled');
+    }
+
+    const secret = speakeasy.generateSecret({
+      name: `4HACKS Learning (${user.email})`,
+      issuer: '4HACKS Learning',
+    });
+
+    const qrCodeDataUrl = await QRCode.toDataURL(secret.otpauth_url || '');
+
+    // Store secret temporarily (will be confirmed when user verifies)
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { twoFactorSecret: secret.base32 },
+    });
+
+    return {
+      secret: secret.base32,
+      qrCode: qrCodeDataUrl,
+    };
+  }
+
+  async enable2FA(userId: string, code: string) {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.twoFactorEnabled) {
+      throw new BadRequestException('2FA is already enabled');
+    }
+
+    if (!user.twoFactorSecret) {
+      throw new BadRequestException('Please generate a 2FA secret first');
+    }
+
+    const isValid = speakeasy.totp.verify({
+      secret: user.twoFactorSecret,
+      encoding: 'base32',
+      token: code,
+    });
+
+    if (!isValid) {
+      throw new BadRequestException('Invalid verification code');
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { twoFactorEnabled: true },
+    });
+
+    return { message: '2FA enabled successfully' };
+  }
+
+  async disable2FA(userId: string, code: string) {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.twoFactorEnabled || !user.twoFactorSecret) {
+      throw new BadRequestException('2FA is not enabled');
+    }
+
+    const isValid = speakeasy.totp.verify({
+      secret: user.twoFactorSecret,
+      encoding: 'base32',
+      token: code,
+    });
+
+    if (!isValid) {
+      throw new BadRequestException('Invalid verification code');
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        twoFactorEnabled: false,
+        twoFactorSecret: null,
+      },
+    });
+
+    return { message: '2FA disabled successfully' };
+  }
+
+  // Session Management
+  async getSessions(userId: string) {
+    return this.prisma.userSession.findMany({
+      where: { userId },
+      orderBy: { lastActiveAt: 'desc' },
+      select: {
+        id: true,
+        deviceName: true,
+        deviceType: true,
+        browser: true,
+        os: true,
+        ipAddress: true,
+        location: true,
+        isCurrentSession: true,
+        lastActiveAt: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  async createSession(
+    userId: string,
+    sessionData: {
+      deviceName?: string;
+      deviceType?: string;
+      browser?: string;
+      os?: string;
+      ipAddress?: string;
+      location?: string;
+    },
+    expiresIn: number = 7 * 24 * 60 * 60 * 1000, // 7 days
+  ) {
+    const expiresAt = new Date(Date.now() + expiresIn);
+
+    return this.prisma.userSession.create({
+      data: {
+        userId,
+        ...sessionData,
+        isCurrentSession: true,
+        expiresAt,
+      },
+    });
+  }
+
+  async revokeSession(userId: string, sessionId: string) {
+    const session = await this.prisma.userSession.findFirst({
+      where: { id: sessionId, userId },
+    });
+
+    if (!session) {
+      throw new NotFoundException('Session not found');
+    }
+
+    await this.prisma.userSession.delete({
+      where: { id: sessionId },
+    });
+
+    return { message: 'Session revoked successfully' };
+  }
+
+  async revokeAllOtherSessions(userId: string, currentSessionId?: string) {
+    await this.prisma.userSession.deleteMany({
+      where: {
+        userId,
+        ...(currentSessionId ? { id: { not: currentSessionId } } : {}),
+      },
+    });
+
+    return { message: 'All other sessions revoked successfully' };
   }
 }

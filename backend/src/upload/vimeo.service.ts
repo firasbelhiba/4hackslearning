@@ -54,7 +54,7 @@ export class VimeoService {
 
   /**
    * Create an upload ticket for tus resumable uploads (client-side upload)
-   * This is the recommended approach for large video files
+   * This is the recommended approach for large video files.
    */
   async createUploadTicket(
     fileSize: number,

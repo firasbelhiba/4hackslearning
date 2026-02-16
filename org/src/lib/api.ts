@@ -10,10 +10,14 @@ export const api = axios.create({
   },
 });
 
+// Cookie names for org portal (different from frontend to avoid conflicts)
+const ACCESS_TOKEN_KEY = 'org_accessToken';
+const REFRESH_TOKEN_KEY = 'org_refreshToken';
+
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    const token = Cookies.get('accessToken');
+    const token = Cookies.get(ACCESS_TOKEN_KEY);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -31,7 +35,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      const refreshToken = Cookies.get('refreshToken');
+      const refreshToken = Cookies.get(REFRESH_TOKEN_KEY);
       if (refreshToken) {
         try {
           const response = await axios.post(`${API_URL}/auth/refresh`, null, {
@@ -40,14 +44,14 @@ api.interceptors.response.use(
 
           const { accessToken, refreshToken: newRefreshToken } = response.data;
 
-          Cookies.set('accessToken', accessToken, { expires: 1 / 96, path: '/' });
-          Cookies.set('refreshToken', newRefreshToken, { expires: 7, path: '/' });
+          Cookies.set(ACCESS_TOKEN_KEY, accessToken, { expires: 1 / 96, path: '/' });
+          Cookies.set(REFRESH_TOKEN_KEY, newRefreshToken, { expires: 7, path: '/' });
 
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return api(originalRequest);
         } catch {
-          Cookies.remove('accessToken');
-          Cookies.remove('refreshToken');
+          Cookies.remove(ACCESS_TOKEN_KEY);
+          Cookies.remove(REFRESH_TOKEN_KEY);
           window.location.href = '/login';
         }
       }
@@ -128,6 +132,11 @@ export const orgCoursesApi = {
     api.patch(`/organizations/${orgId}/courses/${courseId}/resources/${resourceId}`, data),
   deleteResource: (orgId: string, courseId: string, resourceId: string) =>
     api.delete(`/organizations/${orgId}/courses/${courseId}/resources/${resourceId}`),
+  // Analytics
+  getAnalytics: (orgId: string, courseId: string) =>
+    api.get(`/organizations/${orgId}/courses/${courseId}/analytics`),
+  getEnrollments: (orgId: string, courseId: string) =>
+    api.get(`/organizations/${orgId}/courses/${courseId}/enrollments`),
 };
 
 // Certificate Templates API
@@ -178,4 +187,84 @@ export const vimeoApi = {
     api.get(`/upload/vimeo/video/${videoId}/status`),
   deleteVideo: (videoId: string) =>
     api.delete(`/upload/vimeo/video/${videoId}`),
+};
+
+// Quiz Types
+export interface QuizOption {
+  id: string;
+  text: string;
+  isCorrect: boolean;
+}
+
+export interface QuizQuestion {
+  id?: string;
+  text: string;
+  type: 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'MULTIPLE_SELECT';
+  options: QuizOption[];
+  explanation?: string;
+  points: number;
+  order: number;
+}
+
+export interface Quiz {
+  id: string;
+  title: string;
+  description?: string;
+  passingScore: number;
+  timeLimit?: number;
+  moduleId: string;
+  questions: QuizQuestion[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateQuizData {
+  title: string;
+  description?: string;
+  passingScore: number;
+  timeLimit?: number;
+}
+
+export interface CreateQuestionData {
+  text: string;
+  type: 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'MULTIPLE_SELECT';
+  options: QuizOption[];
+  explanation?: string;
+  points: number;
+  order: number;
+}
+
+// Quizzes API
+export const quizzesApi = {
+  // Create a quiz for a module
+  create: (moduleId: string, data: CreateQuizData) =>
+    api.post(`/quizzes/module/${moduleId}`, data),
+
+  // Get quiz by ID (admin view with answers)
+  getById: (quizId: string) =>
+    api.get(`/quizzes/${quizId}/admin`),
+
+  // Get quiz by module ID (admin view with answers)
+  getByModuleId: (moduleId: string) =>
+    api.get(`/quizzes/module/${moduleId}`),
+
+  // Update quiz
+  update: (quizId: string, data: Partial<CreateQuizData>) =>
+    api.patch(`/quizzes/${quizId}`, data),
+
+  // Delete quiz
+  delete: (quizId: string) =>
+    api.delete(`/quizzes/${quizId}`),
+
+  // Add question to quiz
+  addQuestion: (quizId: string, data: CreateQuestionData) =>
+    api.post(`/quizzes/${quizId}/questions`, data),
+
+  // Update question
+  updateQuestion: (questionId: string, data: Partial<CreateQuestionData>) =>
+    api.patch(`/quizzes/questions/${questionId}`, data),
+
+  // Delete question
+  deleteQuestion: (questionId: string) =>
+    api.delete(`/quizzes/questions/${questionId}`),
 };

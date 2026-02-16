@@ -8,6 +8,7 @@ import {
   ValidateNested,
   MinLength,
   Min,
+  IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { QuestionType } from '@prisma/client';
@@ -23,6 +24,7 @@ class QuestionOptionDto {
   text: string;
 
   @ApiProperty({ example: true })
+  @IsBoolean()
   isCorrect: boolean;
 }
 

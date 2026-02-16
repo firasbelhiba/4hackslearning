@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
@@ -50,10 +51,14 @@ export function Sidebar() {
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-white border-r-2 border-black">
       <div className="flex h-full flex-col">
         {/* Logo */}
-        <div className="flex items-center gap-2 px-6 py-5 border-b-2 border-black bg-brand">
-          <h1 className="text-xl font-bold text-black">
-            <span className="text-black">4</span>HACKS
-          </h1>
+        <div className="flex items-center gap-2 px-4 py-4 border-b-2 border-black bg-brand">
+          <Image
+            src="/images/logo-lg.png"
+            alt="4HACKS"
+            width={120}
+            height={40}
+            className="h-8 w-auto"
+          />
           <span className="text-xs font-bold bg-black text-white px-2 py-0.5 rounded">ORG</span>
         </div>
 

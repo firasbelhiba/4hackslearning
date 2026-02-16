@@ -184,6 +184,40 @@ export class UploadController {
     return { message: 'File deleted successfully' };
   }
 
+  @Get('cloudinary/video/:publicId/streaming')
+  @ApiOperation({ summary: 'Get Cloudinary video streaming URLs' })
+  @ApiResponse({
+    status: 200,
+    description: 'Streaming URLs retrieved',
+    schema: {
+      type: 'object',
+      properties: {
+        hls: { type: 'string' },
+        dash: { type: 'string' },
+        thumbnail: { type: 'string' },
+        mp4: { type: 'string' },
+      },
+    },
+  })
+  async getCloudinaryStreamingUrls(@Param('publicId') publicId: string) {
+    const urls = this.cloudinaryService.getAdaptiveStreamingUrls(publicId);
+    const mp4Url = this.cloudinaryService.getVideoStreamUrl(publicId);
+    return {
+      ...urls,
+      mp4: mp4Url,
+    };
+  }
+
+  @Get('cloudinary/video/:publicId/details')
+  @ApiOperation({ summary: 'Get Cloudinary video details' })
+  @ApiResponse({
+    status: 200,
+    description: 'Video details retrieved',
+  })
+  async getCloudinaryVideoDetails(@Param('publicId') publicId: string) {
+    return this.cloudinaryService.getVideoDetails(publicId);
+  }
+
   // Vimeo endpoints for video uploads (organizer portal)
   @Post('vimeo/video/upload-ticket')
   @ApiOperation({
