@@ -153,13 +153,18 @@ Hardcoded passwords (`Admin123!`, `Instructor123!`, `Student123!`) and console.l
 - Added loading states and error handling
 - Dashboard now displays real user data from the backend
 
-### 3.2 CRITICAL: Certificate Verification Uses Mock Function
+### 3.2 ~~CRITICAL: Certificate Verification Uses Mock Function~~ ✅ FIXED
 
-**File:** `frontend/src/app/verify/[code]/page.tsx` (lines 10-30)
+**File:** `frontend/src/app/verify/[code]/page.tsx`
 
-`mockVerify()` returns hardcoded certificate data for any code starting with "4H". The actual API endpoint `certificatesApi.verify(code)` exists in the backend but is never called.
+~~`mockVerify()` returns hardcoded certificate data for any code starting with "4H". The actual API endpoint `certificatesApi.verify(code)` exists in the backend but is never called.~~
 
-**Fix:** Replace `mockVerify()` with the real API call.
+**Status:** ✅ FIXED on 2026-02-17
+
+- Replaced `mockVerify()` with real API call to `certificatesApi.verify(code)`
+- Added proper error handling for network failures
+- Added loading state with Loader2 spinner
+- Certificate verification now validates against actual database records
 
 ### 3.3 CRITICAL: Demo Credentials Displayed on Login Page
 

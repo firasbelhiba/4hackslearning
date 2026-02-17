@@ -3,48 +3,48 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { CheckCircle, XCircle, Award, Calendar, User, BookOpen } from 'lucide-react';
+import { CheckCircle, XCircle, Award, Calendar, User, BookOpen, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { certificatesApi } from '@/lib/api';
 
-// Mock verification - replace with API call
-const mockVerify = async (code: string) => {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  if (code.startsWith('4H')) {
-    return {
-      valid: true,
-      certificate: {
-        uniqueCode: code,
-        recipientName: 'Alice Johnson',
-        courseName: 'Hedera Certification - Intermediate',
-        courseLevel: 'INTERMEDIATE',
-        issuedAt: '2024-01-15T10:00:00Z',
-        instructorName: 'Dhaker',
-      },
-    };
-  }
-
-  return { valid: false, certificate: null };
-};
+interface VerificationResult {
+  valid: boolean;
+  certificate: {
+    uniqueCode: string;
+    recipientName: string;
+    courseName: string;
+    courseLevel: string;
+    issuedAt: string;
+    instructorName: string;
+  } | null;
+}
 
 export default function VerifyCertificatePage() {
   const params = useParams();
   const code = params.code as string;
 
   const [isLoading, setIsLoading] = useState(true);
-  const [result, setResult] = useState<{
-    valid: boolean;
-    certificate: any;
-  } | null>(null);
+  const [result, setResult] = useState<VerificationResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const verify = async () => {
       setIsLoading(true);
-      const res = await mockVerify(code);
-      setResult(res);
-      setIsLoading(false);
+      setError(null);
+
+      try {
+        const response = await certificatesApi.verify(code);
+        setResult(response.data);
+      } catch (err: any) {
+        // If API returns 404 or other error, treat as invalid certificate
+        setResult({ valid: false, certificate: null });
+        if (err.response?.status !== 404) {
+          setError('Failed to verify certificate. Please try again.');
+        }
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     verify();
@@ -63,8 +63,23 @@ export default function VerifyCertificatePage() {
           <CardContent className="p-8">
             {isLoading ? (
               <div className="text-center py-8">
-                <div className="w-16 h-16 mx-auto mb-4 border-4 border-black border-t-transparent rounded-full animate-spin" />
+                <Loader2 className="w-16 h-16 mx-auto mb-4 animate-spin text-brand-dark" />
                 <p className="text-gray-600">Verifying certificate...</p>
+              </div>
+            ) : error ? (
+              <div className="text-center py-8">
+                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+                  <XCircle className="w-10 h-10 text-red-600" />
+                </div>
+                <h1 className="text-2xl font-bold text-red-700">Verification Error</h1>
+                <p className="text-gray-600 mt-2">{error}</p>
+                <Button
+                  variant="primary"
+                  className="mt-6"
+                  onClick={() => window.location.reload()}
+                >
+                  Try Again
+                </Button>
               </div>
             ) : result?.valid ? (
               <div>
@@ -83,7 +98,7 @@ export default function VerifyCertificatePage() {
                     <User className="w-5 h-5 text-gray-400 mt-0.5" />
                     <div>
                       <p className="text-sm text-gray-500">Recipient</p>
-                      <p className="font-medium">{result.certificate.recipientName}</p>
+                      <p className="font-medium">{result.certificate!.recipientName}</p>
                     </div>
                   </div>
 
@@ -91,7 +106,7 @@ export default function VerifyCertificatePage() {
                     <BookOpen className="w-5 h-5 text-gray-400 mt-0.5" />
                     <div>
                       <p className="text-sm text-gray-500">Course</p>
-                      <p className="font-medium">{result.certificate.courseName}</p>
+                      <p className="font-medium">{result.certificate!.courseName}</p>
                     </div>
                   </div>
 
@@ -99,7 +114,7 @@ export default function VerifyCertificatePage() {
                     <Award className="w-5 h-5 text-gray-400 mt-0.5" />
                     <div>
                       <p className="text-sm text-gray-500">Certificate ID</p>
-                      <p className="font-mono font-medium">{result.certificate.uniqueCode}</p>
+                      <p className="font-mono font-medium">{result.certificate!.uniqueCode}</p>
                     </div>
                   </div>
 
@@ -108,7 +123,7 @@ export default function VerifyCertificatePage() {
                     <div>
                       <p className="text-sm text-gray-500">Issue Date</p>
                       <p className="font-medium">
-                        {new Date(result.certificate.issuedAt).toLocaleDateString('en-US', {
+                        {new Date(result.certificate!.issuedAt).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'long',
                           day: 'numeric',
