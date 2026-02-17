@@ -6,6 +6,7 @@
     "backend",
     "frontend",
     "admin",
+    "org",
     "shared"
   ],
   "scripts": {
