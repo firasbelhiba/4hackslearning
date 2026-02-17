@@ -451,7 +451,7 @@ export default function CourseLearningPage() {
               </div>
             )}
             {!isEnrolled && (
-              <Badge variant="secondary" className="hidden sm:flex">
+              <Badge variant="outline" className="hidden sm:flex">
                 Free Preview
               </Badge>
             )}
