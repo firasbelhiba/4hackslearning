@@ -535,7 +535,7 @@ export default function CourseLearningPage() {
                                   {lesson.title}
                                 </p>
                                 {lesson.isFreePreview && !isEnrolled && (
-                                  <Badge variant="secondary" className="text-xs py-0 px-1">Free</Badge>
+                                  <Badge variant="outline" className="text-xs py-0 px-1">Free</Badge>
                                 )}
                               </div>
                               <p className="text-xs text-gray-500">
@@ -680,7 +680,7 @@ export default function CourseLearningPage() {
                     </Badge>
                   )}
                   {!isEnrolled && selectedLesson.isFreePreview && (
-                    <Badge variant="secondary" className="flex-shrink-0">
+                    <Badge variant="outline" className="flex-shrink-0">
                       Free Preview
                     </Badge>
                   )}
@@ -751,7 +751,7 @@ export default function CourseLearningPage() {
                 <div>
                   {/* Quiz Header */}
                   <div className="mb-6">
-                    <Badge variant="secondary" className="mb-2">
+                    <Badge variant="outline" className="mb-2">
                       <HelpCircle className="w-4 h-4 mr-1" />
                       Quiz
                     </Badge>
