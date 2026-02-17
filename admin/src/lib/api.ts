@@ -69,6 +69,7 @@ export const authApi = {
 export const usersApi = {
   getProfile: () => api.get('/users/me'),
   getAll: (params?: any) => api.get('/users', { params }),
+  getAdminStats: () => api.get('/users/admin/stats'),
 };
 
 // Courses API

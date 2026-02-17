@@ -71,6 +71,16 @@ export class UsersController {
     };
   }
 
+  @Get('admin/stats')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get admin dashboard stats (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Admin dashboard statistics' })
+  async getAdminStats() {
+    return this.usersService.getAdminStats();
+  }
+
   @Get('me')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

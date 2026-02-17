@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { InlineLoader } from '@/components/ui/loader';
 import { useAuthStore } from '@/store/auth';
-import { api } from '@/lib/api';
+import { api, usersApi } from '@/lib/api';
 
 interface DashboardStats {
   totalUsers: number;
@@ -46,19 +46,17 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const coursesRes = await api.get('/courses');
+        const [statsRes, coursesRes] = await Promise.all([
+          usersApi.getAdminStats(),
+          api.get('/courses'),
+        ]);
+
+        setStats(statsRes.data);
+
         const courses = coursesRes.data.data || coursesRes.data.courses || [];
-
-        setStats({
-          totalCourses: courses.length,
-          totalUsers: 0,
-          totalEnrollments: 0,
-          totalCertificates: 0,
-        });
-
         setRecentCourses(courses.slice(0, 5));
       } catch (err) {
-        console.error('Failed to fetch dashboard data:', err);
+        // Silently handle error - stats will show 0
       } finally {
         setLoading(false);
       }

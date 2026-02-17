@@ -255,22 +255,18 @@ A single component file with 1,657 lines of code. Extremely difficult to maintai
 
 ## 4. Admin Portal Issues
 
-### 4.1 CRITICAL: Dashboard Stats Are 75% Fake
+### 4.1 ~~CRITICAL: Dashboard Stats Are 75% Fake~~ ✅ FIXED
 
-**File:** `admin/src/app/(dashboard)/page.tsx` (lines 52-57)
+**File:** `admin/src/app/(dashboard)/page.tsx`
 
-```javascript
-setStats({
-  totalCourses: courses.length,  // Real
-  totalUsers: 0,                 // FAKE - hardcoded to 0
-  totalEnrollments: 0,           // FAKE - hardcoded to 0
-  totalCertificates: 0,          // FAKE - hardcoded to 0
-});
-```
+~~Only course count is real. All other admin metrics are hardcoded to zero.~~
 
-Only course count is real. All other admin metrics are hardcoded to zero.
+**Status:** ✅ FIXED on 2026-02-17
 
-**Fix:** Call the proper API endpoints for each stat.
+- Created new backend endpoint `GET /api/users/admin/stats` (admin-only)
+- Endpoint returns real counts for: totalUsers, totalCourses, totalEnrollments, totalCertificates
+- Updated admin dashboard to call `usersApi.getAdminStats()`
+- All dashboard statistics now display real data from the database
 
 ### 4.2 CRITICAL: 3 Major Pages Don't Exist
 

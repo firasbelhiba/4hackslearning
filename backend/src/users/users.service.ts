@@ -109,6 +109,23 @@ export class UsersService {
     };
   }
 
+  async getAdminStats() {
+    const [totalUsers, totalCourses, totalEnrollments, totalCertificates] =
+      await Promise.all([
+        this.prisma.user.count(),
+        this.prisma.course.count(),
+        this.prisma.enrollment.count(),
+        this.prisma.certificate.count(),
+      ]);
+
+    return {
+      totalUsers,
+      totalCourses,
+      totalEnrollments,
+      totalCertificates,
+    };
+  }
+
   excludePassword(user: User) {
     const { password, refreshToken, ...result } = user;
     return result;
