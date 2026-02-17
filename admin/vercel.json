@@ -1,0 +1,7 @@
+{
+  "framework": "nextjs",
+  "installCommand": "cd .. && npm install --legacy-peer-deps",
+  "buildCommand": "next build",
+  "outputDirectory": ".next",
+  "ignoreCommand": "git diff HEAD^ HEAD --quiet -- ."
+}
