@@ -1,52 +1,47 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { BookOpen, Award, Clock, ChevronRight, Play, Settings } from 'lucide-react';
+import { BookOpen, Award, Clock, ChevronRight, Play, Settings, Loader2 } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuthStore } from '@/store/auth';
+import { usersApi, enrollmentsApi, certificatesApi } from '@/lib/api';
 
-// Mock data - replace with API calls
-const stats = {
-  totalCourses: 3,
-  completedCourses: 1,
-  inProgressCourses: 2,
-  totalCertificates: 1,
-  totalWatchTime: 7200, // seconds
-};
+interface DashboardStats {
+  totalCourses: number;
+  completedCourses: number;
+  inProgressCourses: number;
+  totalCertificates: number;
+  totalWatchTime: number;
+}
 
-const enrolledCourses = [
-  {
-    id: '1',
-    title: 'Hedera Certification',
-    level: 'INTERMEDIATE',
-    progress: 66,
-    lastLesson: 'Smart Contract Deployment',
-    thumbnail: '/courses/hedera.jpg',
-  },
-  {
-    id: '2',
-    title: 'DeFi Fundamentals',
-    level: 'BEGINNER',
-    progress: 30,
-    lastLesson: 'Understanding AMMs',
-    thumbnail: '/courses/defi.jpg',
-  },
-];
+interface EnrolledCourse {
+  id: string;
+  courseId: string;
+  progress: number;
+  status: string;
+  course: {
+    id: string;
+    title: string;
+    slug: string;
+    level: string;
+    thumbnail: string | null;
+  };
+}
 
-const recentCertificates = [
-  {
-    id: '1',
-    courseName: 'Hedera Basics',
-    issuedAt: '2024-01-15',
-    code: '4H1234567890',
-  },
-];
+interface Certificate {
+  id: string;
+  uniqueCode: string;
+  issuedAt: string;
+  course: {
+    title: string;
+  };
+}
 
 function formatWatchTime(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
@@ -67,6 +62,12 @@ export default function DashboardPage() {
   const router = useRouter();
   const { user, isAuthenticated, fetchUser } = useAuthStore();
 
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
+  const [certificates, setCertificates] = useState<Certificate[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     fetchUser();
   }, [fetchUser]);
@@ -77,9 +78,70 @@ export default function DashboardPage() {
     }
   }, [isAuthenticated, router]);
 
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      if (!isAuthenticated) return;
+
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const [statsRes, enrollmentsRes, certificatesRes] = await Promise.all([
+          usersApi.getStats(),
+          enrollmentsApi.getAll(),
+          certificatesApi.getAll(),
+        ]);
+
+        setStats(statsRes.data);
+        setEnrolledCourses(enrollmentsRes.data);
+        setCertificates(certificatesRes.data);
+      } catch (err: any) {
+        setError(err.response?.data?.message || 'Failed to load dashboard data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [isAuthenticated]);
+
   if (!isAuthenticated) {
     return null;
   }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-brand" />
+            <p className="text-gray-600">Loading your dashboard...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <Card className="p-8 text-center max-w-md">
+            <p className="text-red-600 mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()}>Try Again</Button>
+          </Card>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Filter in-progress courses (not completed)
+  const inProgressCourses = enrolledCourses.filter(e => e.status !== 'COMPLETED');
+  const recentCertificates = certificates.slice(0, 3);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -110,7 +172,7 @@ export default function DashboardPage() {
                   <BookOpen className="w-6 h-6 text-brand-dark" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{stats.totalCourses}</p>
+                  <p className="text-2xl font-bold">{stats?.totalCourses || 0}</p>
                   <p className="text-sm text-gray-600">Courses</p>
                 </div>
               </CardContent>
@@ -122,7 +184,7 @@ export default function DashboardPage() {
                   <Award className="w-6 h-6 text-purple-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{stats.totalCertificates}</p>
+                  <p className="text-2xl font-bold">{stats?.totalCertificates || 0}</p>
                   <p className="text-sm text-gray-600">Certificates</p>
                 </div>
               </CardContent>
@@ -134,7 +196,7 @@ export default function DashboardPage() {
                   <Clock className="w-6 h-6 text-pink-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{formatWatchTime(stats.totalWatchTime)}</p>
+                  <p className="text-2xl font-bold">{formatWatchTime(stats?.totalWatchTime || 0)}</p>
                   <p className="text-sm text-gray-600">Watch Time</p>
                 </div>
               </CardContent>
@@ -146,7 +208,7 @@ export default function DashboardPage() {
                   <span className="text-2xl">🏆</span>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{stats.completedCourses}</p>
+                  <p className="text-2xl font-bold">{stats?.completedCourses || 0}</p>
                   <p className="text-sm text-gray-600">Completed</p>
                 </div>
               </CardContent>
@@ -164,28 +226,36 @@ export default function DashboardPage() {
               </div>
 
               <div className="space-y-4">
-                {enrolledCourses.map((course) => (
-                  <Card key={course.id} className="hover:shadow-brutal-sm transition-all">
+                {inProgressCourses.map((enrollment) => (
+                  <Card key={enrollment.id} className="hover:shadow-brutal-sm transition-all">
                     <CardContent className="p-4">
                       <div className="flex items-start gap-4">
                         {/* Thumbnail */}
-                        <div className="w-24 h-24 rounded-lg bg-gray-200 flex items-center justify-center flex-shrink-0">
-                          <Play className="w-8 h-8 text-gray-400" />
+                        <div className="w-24 h-24 rounded-lg bg-gray-200 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                          {enrollment.course.thumbnail ? (
+                            <img
+                              src={enrollment.course.thumbnail}
+                              alt={enrollment.course.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <Play className="w-8 h-8 text-gray-400" />
+                          )}
                         </div>
 
                         {/* Content */}
                         <div className="flex-1">
                           <div className="flex items-start justify-between mb-2">
                             <div>
-                              <Badge variant={getLevelVariant(course.level)} className="mb-2">
-                                {course.level.charAt(0) + course.level.slice(1).toLowerCase()}
+                              <Badge variant={getLevelVariant(enrollment.course.level)} className="mb-2">
+                                {enrollment.course.level.charAt(0) + enrollment.course.level.slice(1).toLowerCase()}
                               </Badge>
-                              <h3 className="font-bold">{course.title}</h3>
+                              <h3 className="font-bold">{enrollment.course.title}</h3>
                               <p className="text-sm text-gray-600">
-                                Last: {course.lastLesson}
+                                {Math.round(enrollment.progress)}% complete
                               </p>
                             </div>
-                            <Link href={`/dashboard/courses/${course.id}`}>
+                            <Link href={`/dashboard/courses/${enrollment.course.id}`}>
                               <Button variant="primary" size="sm">
                                 Continue
                               </Button>
@@ -196,12 +266,12 @@ export default function DashboardPage() {
                           <div className="mt-4">
                             <div className="flex justify-between text-sm mb-1">
                               <span>Progress</span>
-                              <span>{course.progress}%</span>
+                              <span>{Math.round(enrollment.progress)}%</span>
                             </div>
                             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                               <div
                                 className="h-full bg-brand transition-all"
-                                style={{ width: `${course.progress}%` }}
+                                style={{ width: `${enrollment.progress}%` }}
                               />
                             </div>
                           </div>
@@ -211,12 +281,14 @@ export default function DashboardPage() {
                   </Card>
                 ))}
 
-                {enrolledCourses.length === 0 && (
+                {inProgressCourses.length === 0 && (
                   <Card>
                     <CardContent className="p-8 text-center">
                       <BookOpen className="w-12 h-12 mx-auto text-gray-400 mb-4" />
                       <p className="text-gray-600 mb-4">
-                        You haven&apos;t enrolled in any courses yet
+                        {enrolledCourses.length === 0
+                          ? "You haven't enrolled in any courses yet"
+                          : "Great job! You've completed all your courses"}
                       </p>
                       <Link href="/courses">
                         <Button variant="primary">Browse Courses</Button>
@@ -231,9 +303,11 @@ export default function DashboardPage() {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold">Certificates</h2>
-                <Link href="/dashboard/certificates" className="text-purple-600 text-sm hover:underline">
-                  View all
-                </Link>
+                {certificates.length > 0 && (
+                  <Link href="/dashboard/certificates" className="text-purple-600 text-sm hover:underline">
+                    View all
+                  </Link>
+                )}
               </div>
 
               <Card>
@@ -246,12 +320,12 @@ export default function DashboardPage() {
                           className="flex items-center justify-between p-3 rounded-lg bg-gray-50"
                         >
                           <div>
-                            <p className="font-medium">{cert.courseName}</p>
+                            <p className="font-medium">{cert.course.title}</p>
                             <p className="text-sm text-gray-500">
                               Issued: {new Date(cert.issuedAt).toLocaleDateString()}
                             </p>
                           </div>
-                          <Link href={`/verify/${cert.code}`}>
+                          <Link href={`/verify/${cert.uniqueCode}`}>
                             <Button variant="ghost" size="sm">
                               <ChevronRight className="w-4 h-4" />
                             </Button>
@@ -282,12 +356,14 @@ export default function DashboardPage() {
                       Browse Courses
                     </Button>
                   </Link>
-                  <Link href="/dashboard/certificates" className="block">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Award className="w-4 h-4 mr-2" />
-                      My Certificates
-                    </Button>
-                  </Link>
+                  {certificates.length > 0 && (
+                    <Link href="/dashboard/certificates" className="block">
+                      <Button variant="outline" className="w-full justify-start">
+                        <Award className="w-4 h-4 mr-2" />
+                        My Certificates
+                      </Button>
+                    </Link>
+                  )}
                 </CardContent>
               </Card>
             </div>
