@@ -575,7 +575,7 @@ export default function EditCoursePage() {
           <Card>
             <CardContent className="p-4">
               <a
-                href={`http://localhost:3000/courses/${course.slug}`}
+                href={`${process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3000'}/courses/${course.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >

@@ -284,16 +284,21 @@ These are core admin functions. Without them, the admin portal is essentially ju
 
 **Fix:** Implement Users management (list, view, edit, deactivate), Certificates management (list, view, revoke), and Settings page.
 
-### 4.3 CRITICAL: Hardcoded Localhost URLs
+### 4.3 ~~CRITICAL: Hardcoded Localhost URLs~~ ✅ FIXED
 
 **Files:**
-- `admin/src/app/login/page.tsx` (line 152): `href="http://localhost:3000"`
-- `admin/src/app/(dashboard)/courses/page.tsx` (line 162): `http://localhost:3000/courses/${course.slug}`
-- `admin/src/app/(dashboard)/courses/[id]/page.tsx` (line 578): `http://localhost:3000/courses/${course.slug}`
 
-These will break in production - all URLs point to localhost.
+- `admin/src/app/login/page.tsx`
+- `admin/src/app/(dashboard)/courses/page.tsx`
+- `admin/src/app/(dashboard)/courses/[id]/page.tsx`
 
-**Fix:** Use `NEXT_PUBLIC_FRONTEND_URL` environment variable.
+~~These will break in production - all URLs point to localhost.~~
+
+**Status:** ✅ FIXED on 2026-02-17
+
+- Replaced all hardcoded `http://localhost:3000` URLs with `process.env.NEXT_PUBLIC_FRONTEND_URL`
+- Added `NEXT_PUBLIC_FRONTEND_URL` to `.env.local` and `.env.example`
+- URLs now work correctly in both development and production environments
 
 ### 4.4 HIGH: Browser `alert()` and `confirm()` for UX
 

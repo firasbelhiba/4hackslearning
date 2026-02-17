@@ -159,7 +159,7 @@ export default function CoursesPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-1">
                         <a
-                          href={`http://localhost:3000/courses/${course.slug}`}
+                          href={`${process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3000'}/courses/${course.slug}`}
                           target="_blank"
                           rel="noopener noreferrer"
                         >

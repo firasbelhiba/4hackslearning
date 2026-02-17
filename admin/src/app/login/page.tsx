@@ -149,7 +149,7 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-gray-300 mt-6">
           <a
-            href="http://localhost:3000"
+            href={process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3000'}
             className="hover:underline hover:text-white"
             target="_blank"
             rel="noopener noreferrer"
